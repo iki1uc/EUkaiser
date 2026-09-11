@@ -3,241 +3,180 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width,initial-scale=1">
-<title>⚜️ EU · KAISER · iki1uc</title>
+<title>⚜️ EU · KAISER · Brücke · Gate · Atom · Waagschale</title>
 <style>
   *{margin:0;padding:0;box-sizing:border-box;}
-  html,body{
-    height:100%;overflow:hidden;
-    background:#05030a;color:#f0e0c0;
-    font-family:'Yu Mincho','Times New Roman',serif;
-    user-select:none;cursor:default;
+  html,body{height:100%;overflow:hidden;
+    background:#050308;color:#f0e0c0;
+    font-family:'Consolas','Courier New',monospace;
+    user-select:none;cursor:crosshair;
   }
   canvas{display:block;width:100vw;height:100vh;}
 
-  /* SIEGEL PANEL */
-  #sealInfo{
-    position:fixed;top:50%;left:50%;
-    transform:translate(-50%,-50%);
-    text-align:center;
-    pointer-events:none;
-    z-index:5;
-    opacity:0;
-    transition:opacity 1.4s;
-  }
-  #sealInfo.show{opacity:1;}
-  #sealInfo .eu{
-    font-size:64px;
-    letter-spacing:12px;
-    color:#f4d060;
-    text-shadow:
-      0 0 30px rgba(212,168,60,0.9),
-      0 0 80px rgba(244,208,96,0.6);
-    font-weight:900;
-    line-height:1;
-  }
-  #sealInfo .kaiser{
-    font-size:22px;
-    letter-spacing:14px;
-    color:#f4e0a0;
-    margin-top:10px;
+  /* HEADER */
+  #hdr{
+    position:fixed;top:14px;left:20px;
+    font-size:11px;letter-spacing:5px;
+    color:#f4d060;z-index:10;
     text-transform:uppercase;
-    font-family:'Consolas',monospace;
+    text-shadow:0 0 18px rgba(244,208,96,0.7);
+  }
+  #hdr .sub{
+    display:block;
+    font-size:9px;letter-spacing:3px;
+    color:#8a7a5a;margin-top:3px;
   }
 
-  /* FORMEL PANEL (unten links) */
+  /* FORMEL HUD (rechts oben) */
   #formula{
-    position:fixed;bottom:24px;left:24px;
+    position:fixed;top:14px;right:20px;
     background:rgba(8,5,15,0.82);
-    border-left:3px solid #d4a83c;
-    padding:16px 22px;
-    font-family:'Consolas',monospace;
-    font-size:13px;
-    line-height:2;
-    color:#c0b090;
-    z-index:8;
-    min-width:270px;
+    border:1px solid rgba(212,168,60,0.35);
+    border-left:3px solid #f4d060;
+    padding:12px 16px;
+    font-size:11px;line-height:1.9;
+    z-index:10;
+    min-width:200px;
     backdrop-filter:blur(6px);
   }
-  #formula .head{
-    color:#f4d060;
-    font-size:10px;
-    letter-spacing:4px;
-    text-transform:uppercase;
+  #formula .t{
+    color:#f4d060;font-size:9px;
+    letter-spacing:4px;text-transform:uppercase;
     border-bottom:1px solid rgba(212,168,60,0.2);
-    padding-bottom:6px;margin-bottom:8px;
+    padding-bottom:5px;margin-bottom:6px;
   }
-  #formula .row{
-    display:flex;justify-content:space-between;
-    opacity:0;
-    transition:opacity .5s;
-  }
-  #formula .row.show{opacity:1;}
+  #formula .r{display:flex;justify-content:space-between;}
   #formula .k{color:#8a7a5a;}
   #formula .v{color:#f4e0a0;font-weight:bold;}
-  #formula .v.gold{color:#f4d060;}
-  #formula .v.green{color:#8cf0b0;}
+  #formula .v.g{color:#f4d060;}
 
-  /* KONFIRMATION SIEGEL (oben rechts) */
-  #confirmed{
-    position:fixed;top:24px;right:24px;
-    background:rgba(8,5,15,0.85);
-    border:1px solid rgba(212,168,60,0.35);
-    border-radius:4px;
-    padding:12px 20px;
-    font-family:'Consolas',monospace;
-    z-index:8;
-    text-align:center;
-    opacity:0;
-    transform:translateY(-10px);
-    transition:opacity .6s, transform .6s;
-  }
-  #confirmed.show{opacity:1;transform:translateY(0);}
-  #confirmed .stamp{
-    color:#8cf0b0;
-    font-size:14px;
-    letter-spacing:3px;
-    font-weight:bold;
-    text-shadow:0 0 12px rgba(140,240,176,0.6);
-  }
-  #confirmed .sub{
-    color:#6a5a4a;
-    font-size:9px;
-    letter-spacing:2px;
-    margin-top:4px;
-    text-transform:uppercase;
-  }
-
-  /* HEADER */
-  #header{
-    position:fixed;top:20px;left:24px;
-    font-family:'Consolas',monospace;
-    font-size:10px;
-    letter-spacing:4px;
-    color:#8a7a5a;
-    z-index:8;
-    text-transform:uppercase;
-  }
-  #header .gold{color:#f4d060;}
-
-  /* MODUL COUNT (unten rechts) */
-  #modCount{
-    position:fixed;bottom:24px;right:24px;
+  /* CAUSE / EFFECT / SOLUTION (unten) */
+  #ces{
+    position:fixed;bottom:14px;left:50%;
+    transform:translateX(-50%);
+    display:flex;gap:32px;
     background:rgba(8,5,15,0.82);
     border:1px solid rgba(212,168,60,0.25);
-    padding:12px 18px;
-    font-family:'Consolas',monospace;
-    font-size:11px;
-    color:#8a7a5a;
-    z-index:8;
-    min-width:170px;
-    line-height:1.9;
+    border-radius:4px;
+    padding:10px 26px;
+    font-size:11px;letter-spacing:3px;
+    z-index:10;
+    backdrop-filter:blur(6px);
   }
-  #modCount .num{
-    color:#f4d060;font-weight:bold;
-  }
-  #modCount .head{
-    color:#f4d060;
-    font-size:10px;
-    letter-spacing:3px;
+  #ces .item{
     text-transform:uppercase;
-    border-bottom:1px solid rgba(212,168,60,0.15);
-    padding-bottom:5px;margin-bottom:6px;
-    display:flex;justify-content:space-between;
+    color:#8a7a5a;
+    transition:color .5s, text-shadow .5s;
   }
+  #ces .item.active{
+    color:#f4d060;
+    text-shadow:0 0 14px rgba(244,208,96,0.9);
+  }
+  #ces .arrow{color:#3a2a4a;}
+
+  /* STATUS (unten links) */
+  #st{
+    position:fixed;bottom:14px;left:20px;
+    font-size:10px;letter-spacing:2px;
+    color:#8a7a5a;z-index:10;
+  }
+  #st .g{color:#8cf0b0;}
+  #st .gold{color:#f4d060;}
 
   @media(max-width:720px){
-    #sealInfo .eu{font-size:40px;letter-spacing:6px;}
-    #sealInfo .kaiser{font-size:14px;letter-spacing:6px;}
-    #formula{font-size:11px;padding:10px 14px;min-width:0;bottom:14px;left:14px;line-height:1.7;}
-    #confirmed{top:14px;right:14px;padding:8px 14px;}
-    #confirmed .stamp{font-size:11px;}
-    #modCount{bottom:14px;right:14px;padding:8px 12px;font-size:10px;min-width:0;}
-    #header{top:14px;left:14px;font-size:9px;}
+    #hdr{font-size:9px;letter-spacing:3px;}
+    #formula{font-size:9px;padding:8px 10px;min-width:150px;}
+    #ces{font-size:9px;letter-spacing:1px;gap:14px;padding:7px 14px;}
+    #st{font-size:9px;}
   }
 </style>
 </head>
 <body>
 
-<canvas id="seal"></canvas>
+<canvas id="uni"></canvas>
 
-<div id="header">
-  <span class="gold">⚜</span> iki1uc · CONFIRMATION · R00T
-</div>
-
-<div id="sealInfo">
-  <div class="eu">EU</div>
-  <div class="kaiser">Kaiser</div>
+<div id="hdr">
+  ⚜ EU · KAISER
+  <span class="sub">Brücke · Gate · Atom · Waagschale</span>
 </div>
 
 <div id="formula">
-  <div class="head">· Formel ·</div>
-  <div class="row" data-i="0"><span class="k">UNI</span><span class="v gold">1</span></div>
-  <div class="row" data-i="1"><span class="k">ROOM</span><span class="v gold">3</span></div>
-  <div class="row" data-i="2"><span class="k">NC</span><span class="v gold">9</span></div>
-  <div class="row" data-i="3"><span class="k">ATOM</span><span class="v gold">243</span></div>
-  <div class="row" data-i="4"><span class="k">FLOW</span><span class="v gold">∞</span></div>
-  <div class="row" data-i="5"><span class="k">ZAM</span><span class="v gold">門</span></div>
+  <div class="t">· Formel ·</div>
+  <div class="r"><span class="k">UNI</span><span class="v g">1</span></div>
+  <div class="r"><span class="k">ROOM</span><span class="v g">3</span></div>
+  <div class="r"><span class="k">NC</span><span class="v g">9</span></div>
+  <div class="r"><span class="k">ATOM</span><span class="v g">243</span></div>
+  <div class="r"><span class="k">FLOW</span><span class="v g">∞</span></div>
+  <div class="r"><span class="k">ZAM</span><span class="v g">門</span></div>
+  <div class="r" style="margin-top:5px;border-top:1px solid rgba(212,168,60,0.15);padding-top:5px;">
+    <span class="k">EU</span><span class="v">ORDNUNG</span>
+  </div>
+  <div class="r"><span class="k">KAISER</span><span class="v">ZENTRUM</span></div>
 </div>
 
-<div id="modCount">
-  <div class="head"><span>· SYSTEM ·</span><span id="sysState">…</span></div>
-  <div>NC-Module <span class="num" id="modNum">0</span>/12</div>
-  <div>Rooms <span class="num" id="roomNum">0</span>/5</div>
-  <div>Achsen <span class="num" id="axisNum">0</span>/243</div>
-  <div>Status <span class="num" id="statusNum">—</span></div>
+<div id="ces">
+  <span class="item" id="cC">URSACHE</span>
+  <span class="arrow">→</span>
+  <span class="item" id="cE">WIRKUNG</span>
+  <span class="arrow">→</span>
+  <span class="item" id="cS">LÖSUNG</span>
 </div>
 
-<div id="confirmed">
-  <div class="stamp">✓ SYSTEM BESTÄTIGT</div>
-  <div class="sub">NC · Commands OK</div>
+<div id="st">
+  <div>Balance <span class="gold" id="sBal">0.00</span></div>
+  <div>Neigung <span class="gold" id="sTilt">0.0°</span></div>
+  <div>Flow <span class="gold" id="sFlow">0/s</span></div>
+  <div>Achsen <span class="gold" id="sAxis">0</span>/243</div>
 </div>
 
 <script>
 "use strict";
 // ═══════════════════════════════════════════════════════════════════
-// ⚜️ EU · KAISER · FORMEL · CONFIRMATION
-// Die Bestätigung: NC-Kommandos laufen — als Code, als Siegel, als Formel.
+// ⚜️ EU · KAISER · ALL in ALL
+// Brücke · Gate · Energie · Atom · Gesetz · Waagschale
+// Formel + Physik + Ursache → Wirkung → Lösung
 // ═══════════════════════════════════════════════════════════════════
 
+// ─── FORMEL ───────────────────────────────────────────────────────
+const FORMEL = {
+  UNI: 1,
+  ROOM: 3,
+  NC: 9,
+  ATOM: 243,
+  FLOW: Infinity,
+  ZAM: '門',
+  EU: 'ORDNUNG',
+  KAISER: 'ZENTRUM',
+};
+
 // ─── KONSTANTEN ───────────────────────────────────────────────────
-const MODULES = [
-  'NC_figur', 'NC_kraft', 'NC_space', 'NC_time',
-  'OS_CORE', 'axiom.map', 'coord', 'dreieck',
-  'respo', 'router', 'vec', 'resolver'
-];
-const ROOMS = ['X.CORE', 'X.IN', 'X.OUT', 'Y', 'B'];
-const NUMBERS = [3, 9, 27, 81, 243];       // 3^1 … 3^5
-const NUM_ANGLES = [
-  {r:1.0, speed: 0.006},
-  {r:1.3, speed:-0.004},
-  {r:1.6, speed: 0.003},
-  {r:1.9, speed:-0.002},
-  {r:2.2, speed: 0.0015},
-];
+const ATOMS = 6;          // Elektronen
+const RINGS = 3;          // Orbit-Ringe
+const FLOW_PARTICLES_MAX = 120;
 
 // ─── STATE ────────────────────────────────────────────────────────
 const S = {
   tick: 0,
-  modulesPinged: 0,
-  roomsPinged: 0,
+  tilt: 0,          // -1..1 Waagschalen-Neigung
+  tiltTarget: 0,
+  loadL: 0.5,       // linke Schale
+  loadR: 0.5,       // rechte Schale
+  flowCount: 0,
+  flowRate: 0,
   axisTick: 0,
-  startedAt: Date.now(),
-  sealOpened: false,
-  confirmed: false,
-  // Roome nodes positions
-  roomNodes: [],
-  // Module nodes positions
-  modNodes: [],
-  // Kira sparkles
+  // Visuals
+  electrons: [],
+  flowParticles: [],
   sparks: [],
-  // Screen flash
   flash: 0,
-  // Imperial aura pulse
-  auraPulse: 0,
+  shake: 0,
+  // CES (Cause/Effect/Solution) phase
+  ces: 0,           // 0=Cause, 1=Effect, 2=Solution
+  cesTimer: 0,
 };
 
 // ─── CANVAS ───────────────────────────────────────────────────────
-const cv = document.getElementById('seal');
+const cv = document.getElementById('uni');
 const ctx = cv.getContext('2d');
 let W, H, CX, CY, R, DPR;
 
@@ -248,422 +187,536 @@ function resize(){
   cv.style.width = W+'px'; cv.style.height = H+'px';
   ctx.setTransform(DPR,0,0,DPR,0,0);
   CX = W/2; CY = H/2;
-  R = Math.min(W,H)*0.26;
-  layoutNodes();
+  R = Math.min(W,H)*0.20;
+  initElectrons();
 }
 window.addEventListener('resize', resize);
 
-function layoutNodes(){
-  // Module rund um das Siegel (äußerer Ring)
-  S.modNodes = MODULES.map((m,i)=>{
-    const a = (i/MODULES.length) * Math.PI * 2 - Math.PI/2;
-    return {
-      name: m,
-      a,
-      r: R * 2.5,
-      x: CX + Math.cos(a)*R*2.5,
-      y: CY + Math.sin(a)*R*2.5,
+// ─── ELEKTRONEN (Atom) ────────────────────────────────────────────
+function initElectrons(){
+  S.electrons = [];
+  for(let i=0;i<ATOMS;i++){
+    S.electrons.push({
+      a: (i/ATOMS)*Math.PI*2,
+      r: R * (1.1 + 0.35*((i%RINGS))),
+      speed: (0.004 + 0.002*(i%3)) * (i%2===0?1:-1),
+      phase: Math.random()*Math.PI*2,
       glow: 0,
-    };
+    });
+  }
+}
+
+// ─── FLOW-PARTIKEL (Energie hin↔her) ──────────────────────────────
+function spawnFlowParticle(fromLeft){
+  if(S.flowParticles.length >= FLOW_PARTICLES_MAX) return;
+  // Partikel wandern entlang der Brücke (linke Schale ↔ rechte Schale)
+  S.flowParticles.push({
+    t: 0,                                       // 0..1 entlang der Brücke
+    speed: 0.006 + Math.random()*0.006,
+    dir: fromLeft ? 1 : -1,                     // 1 = links→rechts (hin), -1 = zurück (her)
+    curve: (Math.random()-0.5) * 60,            // vertikale Krümmung
+    size: 1.2 + Math.random()*1.6,
+    life: 0,
+    maxLife: 260,
+    hue: fromLeft ? 45 : 190,                   // gold hin, cyan her
   });
-  // Rooms als 5 Knoten weiter außen
-  S.roomNodes = ROOMS.map((n,i)=>{
-    const a = (i/ROOMS.length) * Math.PI * 2 - Math.PI/2 + 0.3;
-    return {
-      name: n,
-      a,
-      r: R * 3.1,
-      x: CX + Math.cos(a)*R*3.1,
-      y: CY + Math.sin(a)*R*3.1,
-      glow: 0,
-    };
-  });
+  S.flowCount++;
+}
+
+// ─── FUNKEN ───────────────────────────────────────────────────────
+function spawnSparks(x,y,color,n){
+  n = n || 8;
+  for(let i=0;i<n;i++){
+    const a = Math.random()*Math.PI*2;
+    const sp = 0.6 + Math.random()*2.4;
+    S.sparks.push({
+      x, y,
+      vx: Math.cos(a)*sp, vy: Math.sin(a)*sp,
+      life: 0, maxLife: 30+Math.random()*30,
+      color: color || '#f4d060',
+      size: 0.8 + Math.random()*1.6,
+    });
+  }
 }
 
 // ─── ZEICHNEN ─────────────────────────────────────────────────────
 function draw(){
-  // Hintergrund — tiefer Kaiser-Samt
+  const sx = (Math.random()-0.5) * S.shake;
+  const sy = (Math.random()-0.5) * S.shake;
+  ctx.save();
+  ctx.translate(sx, sy);
+
+  // Hintergrund — Kaiser-Samt
   const bg = ctx.createRadialGradient(CX,CY,0,CX,CY,Math.max(W,H)*0.85);
   bg.addColorStop(0, '#1a0e1c');
-  bg.addColorStop(0.45, '#0d0612');
-  bg.addColorStop(1, '#05030a');
+  bg.addColorStop(0.5, '#0c0610');
+  bg.addColorStop(1, '#050308');
   ctx.fillStyle = bg;
-  ctx.fillRect(0,0,W,H);
+  ctx.fillRect(-20,-20,W+40,H+40);
 
-  // Aura (kaiserlich — gold, pulsierend)
-  const auraR = R * 2.2 + Math.sin(S.auraPulse*0.04) * 8;
-  const aura = ctx.createRadialGradient(CX,CY,0,CX,CY,auraR);
-  aura.addColorStop(0, 'rgba(244,208,96,0.10)');
-  aura.addColorStop(0.5, 'rgba(212,168,60,0.04)');
-  aura.addColorStop(1, 'rgba(212,168,60,0)');
-  ctx.fillStyle = aura;
+  // Kaiserliche Aura
+  const auraR = R*3.2;
+  const ag = ctx.createRadialGradient(CX,CY,0,CX,CY,auraR);
+  ag.addColorStop(0, 'rgba(244,208,96,0.06)');
+  ag.addColorStop(0.5, 'rgba(212,168,60,0.02)');
+  ag.addColorStop(1, 'rgba(212,168,60,0)');
+  ctx.fillStyle = ag;
   ctx.beginPath(); ctx.arc(CX,CY,auraR,0,Math.PI*2); ctx.fill();
 
-  // Kaiserliche Radiallinien (Sonnenstrahlen)
-  drawRadiatingLines();
+  // ═══ GATE (門) oben ═══
+  drawGate();
 
-  // Zahlen-Ringe (3, 9, 27, 81, 243)
-  drawNumberRings();
+  // ═══ WAAGSCHALE ═══
+  drawBalance();
 
-  // Zentrales Siegel
-  drawCentralSeal();
+  // ═══ ATOM (Elektronen) ═══
+  drawAtom();
 
-  // Module nodes
-  drawModNodes();
+  // ═══ KERN (Kaiser-Siegel) ═══
+  drawNucleus();
 
-  // Room nodes
-  drawRoomNodes();
+  // ═══ BRÜCKE (Energie-Pfade) ═══
+  drawBridge();
 
-  // Sparks
+  // ═══ FLOW-PARTIKEL ═══
+  drawFlowParticles();
+
+  // ═══ FUNKEN ═══
   drawSparks();
+
+  ctx.restore();
 
   // Flash
   if(S.flash > 0.01){
-    ctx.fillStyle = `rgba(244,208,96,${S.flash * 0.35})`;
+    ctx.fillStyle = `rgba(244,208,96,${S.flash*0.4})`;
     ctx.fillRect(0,0,W,H);
     S.flash *= 0.9;
     if(S.flash < 0.02) S.flash = 0;
   }
 }
 
-function drawRadiatingLines(){
-  const lines = 72;
-  const innerR = R * 0.75;
-  const outerR = R * 2.4;
+// ─── GATE (門 / Torii) ────────────────────────────────────────────
+function drawGate(){
+  const gw = R * 3.4;
+  const gh = R * 2.0;
+  const x0 = CX - gw/2;
+  const x1 = CX + gw/2;
+  const yTop = CY - gh;
+  const yBot = CY - R * 1.7;
+  const postW = Math.max(4, R*0.06);
+  const topH = Math.max(8, R*0.14);
+
+  const pulse = 1 + 0.03*Math.sin(S.tick*0.05);
+
   ctx.save();
-  ctx.strokeStyle = 'rgba(212,168,60,0.05)';
-  ctx.lineWidth = 0.6;
-  for(let i=0;i<lines;i++){
-    const a = (i/lines)*Math.PI*2 + S.tick*0.0008;
-    ctx.beginPath();
-    ctx.moveTo(CX + Math.cos(a)*innerR, CY + Math.sin(a)*innerR);
-    ctx.lineTo(CX + Math.cos(a)*outerR, CY + Math.sin(a)*outerR);
-    ctx.stroke();
-  }
+  ctx.shadowColor = '#e04a3a';
+  ctx.shadowBlur = 25;
+  ctx.fillStyle = '#e04a3a';
+
+  // Kasagi (oberster Bogen)
+  ctx.fillRect(x0 - gw*0.04, yTop, gw*1.08, topH);
+
+  // Nuki (zweiter Balken)
+  ctx.fillRect(x0 - gw*0.02, yTop + topH*1.6, gw*1.04, topH*0.5);
+
+  // Zwei Pfosten
+  ctx.fillRect(x0, yTop, postW*pulse, yBot - yTop);
+  ctx.fillRect(x1 - postW*pulse, yTop, postW*pulse, yBot - yTop);
+
+  ctx.shadowBlur = 0;
+  ctx.restore();
+
+  // Kanji 門 im Gate
+  ctx.save();
+  ctx.fillStyle = 'rgba(244,208,96,0.65)';
+  ctx.font = `bold ${Math.round(R*0.7)}px "Yu Mincho","Hiragino Mincho ProN","MS Mincho",serif`;
+  ctx.textAlign = 'center'; ctx.textBaseline = 'middle';
+  ctx.shadowColor = '#f4d060';
+  ctx.shadowBlur = 20;
+  ctx.fillText('門', CX, yTop + (yBot-yTop)/2);
   ctx.restore();
 }
 
-function drawNumberRings(){
-  NUMBERS.forEach((num, i)=>{
-    const cfg = NUM_ANGLES[i];
-    const radius = R * cfg.r;
-    const rot = S.tick * cfg.speed;
+// ─── WAAGSCHALE (Balance) ─────────────────────────────────────────
+function drawBalance(){
+  const beamLen = R * 1.6;
+  const tiltAngle = S.tilt * 0.18;
+  const bx = CX, by = CY + R * 0.55;
 
-    // Ring selbst (dünn)
-    ctx.beginPath();
-    ctx.arc(CX, CY, radius, 0, Math.PI*2);
-    ctx.strokeStyle = `rgba(212,168,60,${0.06 + i*0.025})`;
-    ctx.lineWidth = 1;
-    ctx.stroke();
+  // Waagebalken (rotiert)
+  ctx.save();
+  ctx.translate(bx, by);
+  ctx.rotate(tiltAngle);
 
-    // Zahl als Text in der Ring-Mitte
-    ctx.save();
-    ctx.fillStyle = `rgba(244,208,96,${0.28 + i*0.08})`;
-    ctx.font = `${11 + i*1.5}px Consolas, monospace`;
-    ctx.textAlign = 'center'; ctx.textBaseline = 'middle';
-    ctx.shadowColor = '#d4a83c';
-    ctx.shadowBlur = 8;
-    // Zahl an einem Winkel, der rotiert
-    const a = rot;
-    const x = CX + Math.cos(a)*radius;
-    const y = CY + Math.sin(a)*radius;
-    ctx.fillText(String(num), x, y);
-    ctx.restore();
-
-    // Ein paar Ticks (Achsen-Marker) auf dem Ring
-    const ticks = i+2;
-    for(let k=0;k<ticks;k++){
-      const ta = (k/ticks)*Math.PI*2 - rot*2;
-      const x1 = CX + Math.cos(ta)*(radius-3);
-      const y1 = CY + Math.sin(ta)*(radius-3);
-      const x2 = CX + Math.cos(ta)*(radius+3);
-      const y2 = CY + Math.sin(ta)*(radius+3);
-      ctx.strokeStyle = `rgba(212,168,60,${0.15 + i*0.03})`;
-      ctx.lineWidth = 0.8;
-      ctx.beginPath();
-      ctx.moveTo(x1,y1); ctx.lineTo(x2,y2);
-      ctx.stroke();
-    }
-  });
-}
-
-function drawCentralSeal(){
-  const pulse = 1 + 0.03*Math.sin(S.tick*0.06);
-  const r = R * 0.55 * pulse;
-
-  // Äußerer Siegel-Ring
   ctx.beginPath();
-  ctx.arc(CX, CY, r, 0, Math.PI*2);
-  ctx.strokeStyle = 'rgba(244,208,96,0.65)';
-  ctx.lineWidth = 2;
+  ctx.moveTo(-beamLen, 0);
+  ctx.lineTo(beamLen, 0);
+  ctx.strokeStyle = 'rgba(244,208,96,0.85)';
+  ctx.lineWidth = 2.4;
   ctx.shadowColor = '#f4d060';
-  ctx.shadowBlur = 20;
+  ctx.shadowBlur = 14;
   ctx.stroke();
   ctx.shadowBlur = 0;
 
-  // Zweiter dünner Ring
+  // Schalen (links und rechts)
+  drawPan(-beamLen, 0, S.loadL, '#e04a3a');    // URSACHE
+  drawPan( beamLen, 0, S.loadR, '#6cf');       // WIRKUNG
+
+  ctx.restore();
+
+  // Mittelpfeiler (senkrecht, vom Kern zur Waage)
   ctx.beginPath();
-  ctx.arc(CX, CY, r*0.88, 0, Math.PI*2);
+  ctx.moveTo(CX, CY + R*0.25);
+  ctx.lineTo(CX, by - 4);
   ctx.strokeStyle = 'rgba(244,208,96,0.35)';
+  ctx.lineWidth = 1.4;
+  ctx.stroke();
+
+  // Waage-Fuß
+  ctx.beginPath();
+  ctx.moveTo(CX - R*0.28, by + R*0.42);
+  ctx.lineTo(CX + R*0.28, by + R*0.42);
+  ctx.strokeStyle = 'rgba(244,208,96,0.55)';
+  ctx.lineWidth = 1.8;
+  ctx.stroke();
+}
+
+function drawPan(px, py, load, color){
+  const threadLen = R * 0.42;
+  const panR = R * 0.22 + load * R * 0.22;
+
+  // Faden
+  ctx.beginPath();
+  ctx.moveTo(px, py);
+  ctx.lineTo(px, py + threadLen);
+  ctx.strokeStyle = 'rgba(200,180,140,0.4)';
   ctx.lineWidth = 1;
   ctx.stroke();
 
-  // Kaiserliche Strahlen (8 Speichen)
-  ctx.save();
-  ctx.strokeStyle = 'rgba(244,208,96,0.5)';
-  ctx.lineWidth = 1.5;
-  for(let i=0;i<8;i++){
-    const a = (i/8)*Math.PI*2 + S.tick*0.003;
+  // Schale (Halbkreis)
+  ctx.beginPath();
+  ctx.arc(px, py + threadLen, panR, 0, Math.PI);
+  ctx.strokeStyle = color;
+  ctx.lineWidth = 2;
+  ctx.shadowColor = color;
+  ctx.shadowBlur = 12;
+  ctx.stroke();
+  ctx.shadowBlur = 0;
+
+  // Füllstand
+  if(load > 0.02){
     ctx.beginPath();
-    ctx.moveTo(CX + Math.cos(a)*r*0.35, CY + Math.sin(a)*r*0.35);
-    ctx.lineTo(CX + Math.cos(a)*r*0.85, CY + Math.sin(a)*r*0.85);
+    ctx.arc(px, py + threadLen, panR*0.85, Math.PI*load, Math.PI);
+    ctx.strokeStyle = color + 'aa';
+    ctx.lineWidth = 3;
+    ctx.stroke();
+  }
+}
+
+// ─── ATOM (Elektronen-Orbit) ──────────────────────────────────────
+function drawAtom(){
+  // Orbit-Ringe (hinten)
+  for(let ring=0; ring<RINGS; ring++){
+    const rr = R * (1.1 + ring*0.35);
+    ctx.beginPath();
+    ctx.arc(CX, CY, rr, 0, Math.PI*2);
+    ctx.strokeStyle = `rgba(168,136,255,${0.05 + ring*0.02})`;
+    ctx.setLineDash([3, 8]);
+    ctx.lineWidth = 1;
+    ctx.stroke();
+    ctx.setLineDash([]);
+  }
+
+  // Elektronen
+  for(const e of S.electrons){
+    e.a += e.speed;
+    e.glow *= 0.95;
+    const x = CX + Math.cos(e.a) * e.r;
+    const y = CY + Math.sin(e.a) * e.r * 0.55;   // Ellipse für 3D-Look
+
+    // Glow
+    const g = ctx.createRadialGradient(x,y,0,x,y,14);
+    g.addColorStop(0, `rgba(168,136,255,${0.7 + e.glow*0.3})`);
+    g.addColorStop(1, 'rgba(168,136,255,0)');
+    ctx.fillStyle = g;
+    ctx.beginPath(); ctx.arc(x,y,14,0,Math.PI*2); ctx.fill();
+
+    // Punkt
+    ctx.beginPath();
+    ctx.arc(x,y,2 + e.glow*1.5,0,Math.PI*2);
+    ctx.fillStyle = '#d8b8ff';
+    ctx.shadowColor = '#a888ff';
+    ctx.shadowBlur = 10 + e.glow*15;
+    ctx.fill();
+    ctx.shadowBlur = 0;
+  }
+}
+
+// ─── NUCLEUS (Kaiser-Siegel im Zentrum) ───────────────────────────
+function drawNucleus(){
+  const pulse = 1 + 0.05*Math.sin(S.tick*0.06);
+  const coreR = R * 0.55 * pulse;
+
+  // Kaiserliche Aura
+  const g1 = ctx.createRadialGradient(CX,CY,0,CX,CY,coreR*2.2);
+  g1.addColorStop(0, 'rgba(244,208,96,0.55)');
+  g1.addColorStop(0.5, 'rgba(212,168,60,0.18)');
+  g1.addColorStop(1, 'rgba(212,168,60,0)');
+  ctx.fillStyle = g1;
+  ctx.beginPath(); ctx.arc(CX,CY,coreR*2.2,0,Math.PI*2); ctx.fill();
+
+  // Innerer Kern
+  const g2 = ctx.createRadialGradient(CX,CY,0,CX,CY,coreR);
+  g2.addColorStop(0, '#fff5d0');
+  g2.addColorStop(0.4, '#f4d060');
+  g2.addColorStop(1, '#d4a83c');
+  ctx.fillStyle = g2;
+  ctx.beginPath(); ctx.arc(CX,CY,coreR,0,Math.PI*2); ctx.fill();
+
+  // 8 Kaiserliche Speichen (rotierend)
+  ctx.save();
+  ctx.translate(CX,CY);
+  ctx.rotate(S.tick*0.004);
+  ctx.strokeStyle = 'rgba(10,6,12,0.75)';
+  ctx.lineWidth = 2.4;
+  for(let i=0;i<8;i++){
+    const a = (i/8)*Math.PI*2;
+    ctx.beginPath();
+    ctx.moveTo(Math.cos(a)*coreR*0.28, Math.sin(a)*coreR*0.28);
+    ctx.lineTo(Math.cos(a)*coreR*0.88, Math.sin(a)*coreR*0.88);
     ctx.stroke();
   }
   ctx.restore();
 
-  // Sehr innerer Kern-Glow
-  const coreG = ctx.createRadialGradient(CX,CY,0,CX,CY,r*0.5);
-  coreG.addColorStop(0, 'rgba(244,208,96,0.55)');
-  coreG.addColorStop(0.5, 'rgba(212,168,60,0.15)');
-  coreG.addColorStop(1, 'rgba(212,168,60,0)');
-  ctx.fillStyle = coreG;
-  ctx.beginPath(); ctx.arc(CX,CY,r*0.5,0,Math.PI*2); ctx.fill();
-
-  // Inneres Kanji "皇帝" (Kaiser)
+  // Zentrum: 皇
   ctx.save();
-  ctx.fillStyle = 'rgba(244,208,96,0.85)';
-  ctx.font = `bold ${Math.round(r*0.75)}px "Yu Mincho","Hiragino Mincho ProN","MS Mincho",serif`;
+  ctx.fillStyle = '#0a060c';
+  ctx.font = `bold ${Math.round(coreR*0.95)}px "Yu Mincho","Hiragino Mincho ProN","MS Mincho",serif`;
   ctx.textAlign = 'center'; ctx.textBaseline = 'middle';
-  ctx.shadowColor = '#f4d060';
-  ctx.shadowBlur = 30;
   ctx.fillText('皇', CX, CY);
   ctx.restore();
 }
 
-function drawModNodes(){
-  for(const n of S.modNodes){
-    // Position (leicht rotierend)
-    n.a += 0.0008;
-    const x = CX + Math.cos(n.a) * n.r;
-    const y = CY + Math.sin(n.a) * n.r;
-    n.x = x; n.y = y;
+// ─── BRÜCKE (Arc-Pfade zwischen den Schalen) ──────────────────────
+function drawBridge(){
+  const bx = CX, by = CY + R * 0.55;
+  const beamLen = R * 1.6;
+
+  // Zwei Bögen: hin (gold) und her (cyan)
+  for(let i=0; i<2; i++){
+    const fromX = -beamLen;
+    const toX = beamLen;
+    const dir = i === 0 ? 1 : -1;   // 1 = hin (links→rechts)
+    const startX = dir === 1 ? CX + fromX : CX + toX;
+    const endX   = dir === 1 ? CX + toX   : CX + fromX;
+    const arcHeight = 60 + i*30;
+
+    ctx.beginPath();
+    ctx.moveTo(startX, by);
+    ctx.quadraticCurveTo(CX, by - arcHeight, endX, by);
+    ctx.strokeStyle = i === 0 ? 'rgba(244,208,96,0.14)' : 'rgba(108,204,255,0.12)';
+    ctx.lineWidth = 1.2;
+    ctx.setLineDash([4, 8]);
+    ctx.stroke();
+    ctx.setLineDash([]);
+  }
+
+  // Kleine Pfeile an den Enden (Richtung)
+  const arrowAt = (x, y, dir, color) => {
+    ctx.beginPath();
+    ctx.moveTo(x, y);
+    ctx.lineTo(x - dir*10, y - 5);
+    ctx.lineTo(x - dir*10, y + 5);
+    ctx.closePath();
+    ctx.fillStyle = color;
+    ctx.fill();
+  };
+  arrowAt(CX + beamLen + 8, by, 1, 'rgba(244,208,96,0.5)');
+  arrowAt(CX - beamLen - 8, by, -1, 'rgba(108,204,255,0.5)');
+}
+
+// ─── FLOW-PARTIKEL ────────────────────────────────────────────────
+function drawFlowParticles(){
+  const bx = CX, by = CY + R * 0.55;
+  const beamLen = R * 1.6;
+
+  for(const p of S.flowParticles){
+    p.t += p.speed * p.dir;
+    p.life++;
+
+    // 0..1 → Position auf dem Bogen
+    const t = p.dir === 1 ? p.t : 1 + p.t;
+    const tt = Math.max(0, Math.min(1, Math.abs(t)));
+    const fromX = p.dir === 1 ? CX - beamLen : CX + beamLen;
+    const toX   = p.dir === 1 ? CX + beamLen : CX - beamLen;
+    const x = fromX + (toX - fromX) * tt;
+    const arcY = by - (60 + Math.abs(p.curve*0.5)) * 4 * tt * (1-tt);
+    const y = arcY + p.curve * 0.3;
 
     // Glow
-    const g = ctx.createRadialGradient(x,y,0,x,y,20);
-    g.addColorStop(0, `rgba(244,208,96,${0.5 + n.glow*0.5})`);
-    g.addColorStop(1, 'rgba(244,208,96,0)');
+    const col = p.hue === 45 ? `rgba(244,208,96,${1 - p.life/p.maxLife})` :
+                               `rgba(108,204,255,${1 - p.life/p.maxLife})`;
+    const g = ctx.createRadialGradient(x,y,0,x,y,p.size*4);
+    g.addColorStop(0, col);
+    g.addColorStop(1, 'rgba(0,0,0,0)');
     ctx.fillStyle = g;
-    ctx.beginPath(); ctx.arc(x,y,20,0,Math.PI*2); ctx.fill();
+    ctx.beginPath(); ctx.arc(x,y,p.size*4,0,Math.PI*2); ctx.fill();
 
-    // Punkt
+    // Körper
     ctx.beginPath();
-    ctx.arc(x,y,2.5 + n.glow*1.5,0,Math.PI*2);
-    ctx.fillStyle = n.glow > 0.5 ? '#fff5d0' : '#f4d060';
-    ctx.shadowColor = '#f4d060';
-    ctx.shadowBlur = 10 + n.glow*15;
+    ctx.arc(x,y,p.size,0,Math.PI*2);
+    ctx.fillStyle = p.hue === 45 ? '#fff5d0' : '#a0e0ff';
+    ctx.shadowColor = p.hue === 45 ? '#f4d060' : '#6cf';
+    ctx.shadowBlur = 10;
     ctx.fill();
     ctx.shadowBlur = 0;
 
-    // Label
-    ctx.fillStyle = `rgba(200,180,140,${0.4 + n.glow*0.5})`;
-    ctx.font = '9px Consolas, monospace';
-    ctx.textAlign = 'center'; ctx.textBaseline = 'middle';
-    ctx.fillText(n.name, x, y - 10);
-
-    if(n.glow > 0.01) n.glow *= 0.94;
+    // Angekommen?
+    if(p.t >= 1 || p.t <= -1 || p.life > p.maxLife){
+      const endX = p.dir === 1 ? CX + beamLen : CX - beamLen;
+      const endY = by;
+      spawnSparks(endX, endY, p.hue === 45 ? '#f4d060' : '#6cf', 4);
+      S.flowParticles.splice(S.flowParticles.indexOf(p), 1);
+    }
   }
 }
 
-function drawRoomNodes(){
-  for(const n of S.roomNodes){
-    n.a -= 0.0005;
-    const x = CX + Math.cos(n.a) * n.r;
-    const y = CY + Math.sin(n.a) * n.r;
-    n.x = x; n.y = y;
-
-    // Kleines Quadrat als Marker
-    ctx.save();
-    ctx.translate(x,y);
-    ctx.rotate(n.a);
-    ctx.strokeStyle = `rgba(212,168,60,${0.5 + n.glow*0.5})`;
-    ctx.lineWidth = 1;
-    ctx.strokeRect(-3,-3,6,6);
-    ctx.restore();
-
-    // Label
-    ctx.fillStyle = `rgba(200,180,140,${0.45 + n.glow*0.5})`;
-    ctx.font = '9px Consolas, monospace';
-    ctx.textAlign = 'center'; ctx.textBaseline = 'middle';
-    ctx.fillText(n.name, x, y - 12);
-
-    if(n.glow > 0.01) n.glow *= 0.94;
-  }
-}
-
+// ─── FUNKEN ───────────────────────────────────────────────────────
 function drawSparks(){
-  for(let i=S.sparks.length-1;i>=0;i--){
+  for(let i=S.sparks.length-1; i>=0; i--){
     const s = S.sparks[i];
     s.x += s.vx; s.y += s.vy;
-    s.vx *= 0.95; s.vy *= 0.95;
+    s.vx *= 0.94; s.vy *= 0.94;
     s.life++;
     const a = 1 - s.life/s.maxLife;
-    ctx.fillStyle = `rgba(244,208,96,${a})`;
+    ctx.fillStyle = s.color;
+    ctx.globalAlpha = a;
     ctx.beginPath();
     ctx.arc(s.x, s.y, s.size*a, 0, Math.PI*2);
     ctx.fill();
+    ctx.globalAlpha = 1;
     if(s.life > s.maxLife) S.sparks.splice(i,1);
   }
 }
 
-// ─── UPDATE / LOOP ────────────────────────────────────────────────
-function loop(){
+// ─── UPDATE ───────────────────────────────────────────────────────
+function update(){
   S.tick++;
-  S.auraPulse++;
 
-  // Zufällige module-Pings (als "Achsen werden verifiziert")
-  if(Math.random() < 0.015){
-    const n = S.modNodes[Math.floor(Math.random()*S.modNodes.length)];
-    n.glow = 1;
-    spawnSpark(n.x, n.y);
-  }
-  // Room pings
-  if(Math.random() < 0.008){
-    const n = S.roomNodes[Math.floor(Math.random()*S.roomNodes.length)];
-    n.glow = 1;
-    spawnSpark(n.x, n.y);
-  }
   // Achsen-Tick (243 pro Zyklus)
   S.axisTick = (S.axisTick + 1) % 243;
-  document.getElementById('axisNum').textContent = S.axisTick;
 
-  draw();
-  requestAnimationFrame(loop);
-}
+  // Waagschale: Last wandert
+  S.loadL += (Math.random()-0.5)*0.008;
+  S.loadR += (Math.random()-0.5)*0.008;
+  S.loadL = Math.max(0.15, Math.min(0.9, S.loadL));
+  S.loadR = Math.max(0.15, Math.min(0.9, S.loadR));
+  S.tilt = Math.max(-1, Math.min(1, (S.loadR - S.loadL) * 1.8));
 
-function spawnSpark(x,y){
-  const n = 4 + Math.floor(Math.random()*3);
-  for(let i=0;i<n;i++){
-    const a = Math.random()*Math.PI*2;
-    const sp = 0.3 + Math.random()*1.2;
-    S.sparks.push({
-      x, y,
-      vx: Math.cos(a)*sp,
-      vy: Math.sin(a)*sp,
-      size: 1 + Math.random()*1.5,
-      life: 0,
-      maxLife: 30 + Math.random()*20,
-    });
+  // Flow-Partikel spawnen automatisch
+  if(Math.random() < 0.05) spawnFlowParticle(true);   // hin
+  if(Math.random() < 0.05) spawnFlowParticle(false);  // her
+
+  // CES-Phasen-Wechsel (Ursache → Wirkung → Lösung)
+  S.cesTimer++;
+  if(S.cesTimer > 120){   // ~2 Sekunden
+    S.cesTimer = 0;
+    S.ces = (S.ces + 1) % 3;
+    updateCES();
   }
+
+  // Screen-Shake und Flash abbauen
+  S.shake *= 0.88;
+  if(S.shake < 0.3) S.shake = 0;
 }
+
+function updateCES(){
+  document.querySelectorAll('#ces .item').forEach(el=>el.classList.remove('active'));
+  const ids = ['cC', 'cE', 'cS'];
+  document.getElementById(ids[S.ces]).classList.add('active');
+  // Sound
+  const freqs = [392, 523, 784];
+  beep(freqs[S.ces], 0.2, 'sine');
+}
+
+// ─── HUD UPDATE ───────────────────────────────────────────────────
+let lastFlowT = 0;
+function updateHUD(){
+  document.getElementById('sBal').textContent = (1 - Math.abs(S.tilt)/1.5).toFixed(2);
+  document.getElementById('sTilt').textContent = (S.tilt*8).toFixed(1) + '°';
+  document.getElementById('sAxis').textContent = S.axisTick;
+}
+
+// Flow-Rate zählen (1/s)
+setInterval(()=>{
+  S.flowRate = S.flowCount;
+  S.flowCount = 0;
+  document.getElementById('sFlow').textContent = S.flowRate + '/s';
+}, 1000);
 
 // ─── SOUND ────────────────────────────────────────────────────────
 let audioCtx = null;
 function beep(freq, dur, type){
   try{
-    audioCtx = audioCtx || new (window.AudioContext || window.webkitAudioContext)();
+    audioCtx = audioCtx || new (window.AudioContext||window.webkitAudioContext)();
     const o = audioCtx.createOscillator();
     const g = audioCtx.createGain();
     o.type = type || 'sine';
     o.frequency.value = freq;
-    g.gain.value = 0.035;
+    g.gain.value = 0.03;
     g.gain.exponentialRampToValueAtTime(0.001, audioCtx.currentTime + dur);
     o.connect(g); g.connect(audioCtx.destination);
     o.start(); o.stop(audioCtx.currentTime + dur);
   }catch(_){}
 }
 
-// ─── BESTÄTIGUNGS-SEQUENZ ─────────────────────────────────────────
-// Die Formel-Zeilen erscheinen nacheinander, jede mit einem Ton.
-// Module werden "gepingt", Rooms werden "gepingt".
-// Am Ende: Siegel + Bestätigung.
-
-function runConfirmation(){
-  const rows = document.querySelectorAll('#formula .row');
-  let i = 0;
-  const interval = setInterval(()=>{
-    if(i >= rows.length){
-      clearInterval(interval);
-      finishConfirmation();
-      return;
-    }
-    rows[i].classList.add('show');
-    // Sound pro Zeile — höher werdend (kaiserliche Tonleiter)
-    const freqs = [330, 392, 440, 523, 587, 659];
-    beep(freqs[i] || 660, 0.14, 'sine');
-    // ein Modul "gepingt"
-    if(S.modNodes[i]){
-      S.modNodes[i].glow = 1;
-      spawnSpark(S.modNodes[i].x, S.modNodes[i].y);
-      document.getElementById('modNum').textContent = i + 1;
-    }
-    if(i < ROOMS.length){
-      if(S.roomNodes[i]){
-        S.roomNodes[i].glow = 1;
-        spawnSpark(S.roomNodes[i].x, S.roomNodes[i].y);
-      }
-      document.getElementById('roomNum').textContent = i + 1;
-    }
-    i++;
-  }, 420);
+// ─── LOOP ─────────────────────────────────────────────────────────
+function loop(){
+  update();
+  draw();
+  updateHUD();
+  requestAnimationFrame(loop);
 }
 
-function finishConfirmation(){
-  // Kurz warten, dann alles zeigen
-  setTimeout(()=>{
-    document.getElementById('sysState').textContent = 'OK';
-    document.getElementById('statusNum').textContent = 'BESTÄTIGT';
-    document.getElementById('statusNum').style.color = '#8cf0b0';
+// ─── INTERAKTION ──────────────────────────────────────────────────
+// Klick = Energie-Injektion + Balance-Kippen
+cv.addEventListener('click', (e)=>{
+  const x = e.clientX, y = e.clientY;
+  spawnSparks(x, y, '#f4d060', 10);
+  // Wenn Klick links von Mitte → Last nach links
+  if(x < CX){
+    S.loadL = Math.min(0.95, S.loadL + 0.1);
+    spawnFlowParticle(true);
+  } else {
+    S.loadR = Math.min(0.95, S.loadR + 0.1);
+    spawnFlowParticle(false);
+  }
+  beep(523, 0.08, 'sine');
+  S.flash = Math.max(S.flash, 0.1);
+});
 
-    // Alle Module final pingen
-    S.modNodes.forEach((n,i)=>{
-      setTimeout(()=>{
-        n.glow = 1;
-        spawnSpark(n.x, n.y);
-        beep(523 + i*15, 0.06, 'sine');
-      }, i*50);
-    });
-    // Alle Rooms
-    S.roomNodes.forEach((n,i)=>{
-      setTimeout(()=>{
-        n.glow = 1;
-        spawnSpark(n.x, n.y);
-      }, 600 + i*80);
-    });
-
-    // Formel-Töne (kaiserlicher Schlussakkord)
-    setTimeout(()=>{
-      beep(523, 0.4, 'sine');
-      setTimeout(()=>beep(659, 0.4, 'sine'), 180);
-      setTimeout(()=>beep(784, 0.6, 'sine'), 360);
-      S.flash = 1;
-    }, 800);
-
-    // Bestätigung anzeigen
-    setTimeout(()=>{
-      document.getElementById('sealInfo').classList.add('show');
-    }, 1200);
-
-    setTimeout(()=>{
-      document.getElementById('confirmed').classList.add('show');
-      S.confirmed = true;
-    }, 1800);
-  }, 300);
-}
+// Space = Kaiser-Achse (243)
+document.addEventListener('keydown', (e)=>{
+  if(e.key === ' '){
+    e.preventDefault();
+    // Achsen-Burst — alle Elektronen pingen
+    for(const e2 of S.electrons) e2.glow = 1;
+    spawnSparks(CX, CY, '#f4d060', 25);
+    beep(784, 0.3, 'sine');
+    S.flash = 0.6;
+    S.shake = 6;
+  }
+});
 
 // ─── INIT ─────────────────────────────────────────────────────────
 resize();
-document.getElementById('modNum').textContent = '0';
-document.getElementById('roomNum').textContent = '0';
-document.getElementById('axisNum').textContent = '0';
-document.getElementById('sysState').textContent = 'prüft…';
+updateCES();
 
-console.log('%c⚜️ EU · KAISER · iki1uc · CONFIRMATION','color:#f4d060;font-weight:bold;font-size:14px;');
-console.log('Formel: UNI=1 · ROOM=3 · NC=9 · ATOM=243 · FLOW=∞ · ZAM=門');
-console.log('12 NC-Module · 5 Rooms · 243 Achsen');
-console.log('Bestätigung läuft…');
-
-// Bestätigung starten (nach kurzem Delay damit resize/init fertig)
-setTimeout(runConfirmation, 600);
+console.log('%c⚜️ EU · KAISER · ALL in ALL','color:#f4d060;font-weight:bold;font-size:14px;');
+console.log('Brücke · Gate · Atom · Waagschale · Energie');
+console.log('Formel:', FORMEL);
+console.log('Ursache → Wirkung → Lösung');
+console.log('Space = Kaiser-Achse · Klick = Energie-Injektion');
 
 requestAnimationFrame(loop);
 </script>
