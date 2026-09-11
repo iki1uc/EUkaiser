@@ -1,0 +1,565 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>🖥️ MAINBOARD · HARDWARE · SIMULATION</title>
+    <style>
+        * { margin:0; padding:0; box-sizing:border-box; }
+        body {
+            background: #05070e;
+            color: #c0d0d0;
+            font-family: 'Segoe UI', 'Consolas', monospace;
+            overflow: hidden;
+            height: 100vh;
+            display: flex;
+            flex-direction: column;
+        }
+
+        #app {
+            display: flex;
+            flex:1;
+            height:100vh;
+            overflow:hidden;
+        }
+
+        /* Sidebar – Komponentenauswahl */
+        #sidebar {
+            width: 280px;
+            min-width: 240px;
+            background: rgba(6,8,16,0.92);
+            backdrop-filter: blur(12px);
+            border-right: 1px solid rgba(120,220,150,0.08);
+            padding: 16px 14px;
+            overflow-y: auto;
+            z-index: 10;
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+        }
+        #sidebar .brand {
+            font-size: 18px;
+            font-weight: 300;
+            letter-spacing: 2px;
+            background: linear-gradient(135deg, #7ee0a0, #d8f0c0, #b388ff);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            padding-bottom: 8px;
+            border-bottom: 1px solid rgba(120,220,150,0.06);
+        }
+        .comp-group {
+            background: rgba(0,0,0,0.25);
+            border-radius: 10px;
+            padding: 8px 10px;
+            border: 1px solid rgba(120,220,150,0.04);
+        }
+        .comp-group label {
+            font-size: 10px;
+            color: #8aa8a0;
+            display: block;
+            margin-bottom: 3px;
+            letter-spacing: 1px;
+        }
+        .comp-group select, .comp-group input {
+            width: 100%;
+            background: rgba(20,28,20,0.6);
+            border: 1px solid rgba(120,220,150,0.12);
+            border-radius: 6px;
+            padding: 4px 8px;
+            color: #d0e8e0;
+            font-family: inherit;
+            font-size: 11px;
+        }
+        .comp-group input::placeholder { color: #4a6a5a; }
+
+        #simulateBtn {
+            background: rgba(20,28,20,0.6);
+            border: 1px solid #7ee0a0;
+            border-radius: 8px;
+            padding: 8px 0;
+            color: #d0e8e0;
+            font-weight: bold;
+            cursor: pointer;
+            transition: 0.3s;
+            margin-top: 6px;
+        }
+        #simulateBtn:hover { background: rgba(120,220,150,0.1); border-color: #b388ff; }
+
+        .result-panel {
+            flex:1;
+            background: rgba(0,0,0,0.2);
+            border-radius: 10px;
+            padding: 8px 12px;
+            border: 1px solid rgba(120,220,150,0.04);
+            font-size: 10px;
+            line-height: 1.6;
+            overflow-y: auto;
+            min-height: 100px;
+        }
+        .result-panel .head { color: #f0d080; font-weight: bold; border-bottom: 1px solid rgba(255,215,0,0.06); padding-bottom: 4px; margin-bottom: 4px; }
+        .result-panel .row { display: flex; justify-content: space-between; border-bottom: 1px solid rgba(255,255,255,0.02); padding: 2px 0; }
+        .result-panel .val { font-weight: bold; }
+        .val.gold { color: #f0d080; }
+        .val.green { color: #8cf0d0; }
+        .val.red { color: #ff6666; }
+
+        /* 3D-Stage */
+        #stage {
+            flex:1;
+            position:relative;
+            overflow:hidden;
+            background: #05070e;
+        }
+        #stage canvas {
+            display:block;
+            width:100%;
+            height:100%;
+        }
+
+        /* Statuszeile */
+        #status {
+            position: absolute;
+            bottom: 16px;
+            left: 16px;
+            background: rgba(0,0,0,0.55);
+            backdrop-filter: blur(8px);
+            border-radius: 12px;
+            padding: 6px 14px;
+            font-size: 10px;
+            border: 1px solid rgba(120,220,150,0.05);
+            color: #6a8a7a;
+            pointer-events: none;
+            z-index: 20;
+        }
+        #status .val { color: #a0e0b0; font-weight: bold; }
+
+        @media (max-width:800px) {
+            #sidebar { width: 0; min-width:0; padding:0; overflow:hidden; border:none; }
+            #status { left:8px; bottom:8px; font-size:8px; padding:4px 10px; }
+        }
+    </style>
+</head>
+<body>
+
+<div id="app">
+    <!-- Sidebar – Hardware-Auswahl & Ergebnisse -->
+    <div id="sidebar">
+        <div class="brand">🖥️ MAINBOARD</div>
+
+        <div class="comp-group">
+            <label>CPU</label>
+            <select id="cpuSelect">
+                <option value="intel_i9_13900K">Intel Core i9-13900K</option>
+                <option value="intel_i7_13700K">Intel Core i7-13700K</option>
+                <option value="amd_ryzen9_7950X">AMD Ryzen 9 7950X</option>
+                <option value="amd_ryzen7_7800X3D">AMD Ryzen 7 7800X3D</option>
+                <option value="intel_i5_13600K">Intel Core i5-13600K</option>
+                <option value="custom">🔧 Eigene Eingabe</option>
+            </select>
+            <input id="cpuCustom" placeholder="z.B. Intel i9-14900K" style="margin-top:4px; display:none;">
+        </div>
+
+        <div class="comp-group">
+            <label>GPU</label>
+            <select id="gpuSelect">
+                <option value="nvidia_rtx4090">NVIDIA RTX 4090</option>
+                <option value="nvidia_rtx4080">NVIDIA RTX 4080</option>
+                <option value="amd_rx7900XTX">AMD RX 7900 XTX</option>
+                <option value="nvidia_rtx4070">NVIDIA RTX 4070</option>
+                <option value="amd_rx7800XT">AMD RX 7800 XT</option>
+                <option value="custom">🔧 Eigene Eingabe</option>
+            </select>
+            <input id="gpuCustom" placeholder="z.B. NVIDIA RTX 5090" style="margin-top:4px; display:none;">
+        </div>
+
+        <div class="comp-group">
+            <label>RAM</label>
+            <select id="ramSelect">
+                <option value="ddr5_6400_32">DDR5-6400 32GB</option>
+                <option value="ddr5_6000_32">DDR5-6000 32GB</option>
+                <option value="ddr5_5600_16">DDR5-5600 16GB</option>
+                <option value="ddr4_3600_32">DDR4-3600 32GB</option>
+                <option value="custom">🔧 Eigene Eingabe</option>
+            </select>
+            <input id="ramCustom" placeholder="z.B. DDR5-7200 48GB" style="margin-top:4px; display:none;">
+        </div>
+
+        <div class="comp-group">
+            <label>SSD</label>
+            <select id="ssdSelect">
+                <option value="pcie4_7000">PCIe 4.0 7000 MB/s</option>
+                <option value="pcie4_5000">PCIe 4.0 5000 MB/s</option>
+                <option value="pcie3_3500">PCIe 3.0 3500 MB/s</option>
+                <option value="sata_550">SATA SSD 550 MB/s</option>
+                <option value="custom">🔧 Eigene Eingabe</option>
+            </select>
+            <input id="ssdCustom" placeholder="z.B. PCIe 5.0 10000" style="margin-top:4px; display:none;">
+        </div>
+
+        <button id="simulateBtn">🔍 SIMULIEREN</button>
+
+        <div class="result-panel" id="resultPanel">
+            <div class="head">📊 ERGEBNISSE</div>
+            <div id="resultContent">
+                <div class="row"><span>Kompatibilität</span><span class="val gold">–</span></div>
+                <div class="row"><span>Bottleneck</span><span class="val">–</span></div>
+                <div class="row"><span>Respo (Effizienz)</span><span class="val green">–</span></div>
+                <div class="row"><span>Empfehlung</span><span class="val">–</span></div>
+            </div>
+        </div>
+    </div>
+
+    <!-- 3D Stage -->
+    <div id="stage">
+        <canvas id="canvas"></canvas>
+        <div id="status">
+            <span>🔄 <span class="val" id="statusText">Simulation bereit</span></span>
+        </div>
+    </div>
+</div>
+
+<script type="importmap">
+{
+    "imports": {
+        "three": "https://cdn.jsdelivr.net/npm/three@0.160.0/build/three.module.js",
+        "three/addons/": "https://cdn.jsdelivr.net/npm/three@0.160.0/examples/jsm/"
+    }
+}
+</script>
+
+<script type="module">
+// ================================================================
+//  MAINBOARD · HARDWARE · SIMULATION
+//  Echtzeit‑Kompatibilitäts‑Engine mit Blasen‑Visualisierung
+// ================================================================
+
+import * as THREE from 'three';
+import { OrbitControls } from 'three/addons/controls/OrbitControls.js';
+
+// ─── DATENBANK (reale Werte & bekannte Probleme) ──────────────
+const HARDWARE_DB = {
+    // CPU
+    cpu: {
+        'intel_i9_13900K': { brand:'Intel', model:'Core i9-13900K', score: 42000, tdp: 253, issues: ['Spannungsinstabilität bei 13. Gen'] },
+        'intel_i7_13700K': { brand:'Intel', model:'Core i7-13700K', score: 35000, tdp: 253, issues: ['Spannungsinstabilität bei 13. Gen'] },
+        'amd_ryzen9_7950X': { brand:'AMD', model:'Ryzen 9 7950X', score: 40000, tdp: 170, issues: ['lange Bootzeiten AM5'] },
+        'amd_ryzen7_7800X3D': { brand:'AMD', model:'Ryzen 7 7800X3D', score: 32000, tdp: 120, issues: [] },
+        'intel_i5_13600K': { brand:'Intel', model:'Core i5-13600K', score: 28000, tdp: 181, issues: ['Spannungsinstabilität bei 13. Gen'] },
+    },
+    // GPU
+    gpu: {
+        'nvidia_rtx4090': { brand:'NVIDIA', model:'RTX 4090', score: 85000, vram:24, issues: ['Stromspitzen (ATX 3.0 nötig)'] },
+        'nvidia_rtx4080': { brand:'NVIDIA', model:'RTX 4080', score: 65000, vram:16, issues: ['hoher Preis'] },
+        'amd_rx7900XTX': { brand:'AMD', model:'RX 7900 XTX', score: 62000, vram:24, issues: ['Treiberschwankungen'] },
+        'nvidia_rtx4070': { brand:'NVIDIA', model:'RTX 4070', score: 45000, vram:12, issues: ['niedriger Speicher'] },
+        'amd_rx7800XT': { brand:'AMD', model:'RX 7800 XT', score: 48000, vram:16, issues: ['Treiberschwankungen'] },
+    },
+    // RAM
+    ram: {
+        'ddr5_6400_32': { type:'DDR5', speed:6400, size:32, latency:32 },
+        'ddr5_6000_32': { type:'DDR5', speed:6000, size:32, latency:30 },
+        'ddr5_5600_16': { type:'DDR5', speed:5600, size:16, latency:28 },
+        'ddr4_3600_32': { type:'DDR4', speed:3600, size:32, latency:18 },
+    },
+    // SSD
+    ssd: {
+        'pcie4_7000': { interface:'PCIe 4.0', speed_read:7000, speed_write:6500, iops:1000000 },
+        'pcie4_5000': { interface:'PCIe 4.0', speed_read:5000, speed_write:4500, iops:800000 },
+        'pcie3_3500': { interface:'PCIe 3.0', speed_read:3500, speed_write:3200, iops:600000 },
+        'sata_550': { interface:'SATA', speed_read:550, speed_write:520, iops:90000 },
+    }
+};
+
+// ─── DOM REFS ──────────────────────────────────────────────────
+const canvas = document.getElementById('canvas');
+const statusText = document.getElementById('statusText');
+const resultContent = document.getElementById('resultContent');
+
+// ─── THREE.JS SETUP ──────────────────────────────────────────
+const renderer = new THREE.WebGLRenderer({ canvas, antialias: true });
+renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
+renderer.toneMapping = THREE.ACESFilmicToneMapping;
+renderer.toneMappingExposure = 1.2;
+
+const scene = new THREE.Scene();
+scene.background = new THREE.Color(0x05070e);
+
+const camera = new THREE.PerspectiveCamera(45, canvas.clientWidth / canvas.clientHeight, 0.1, 30);
+camera.position.set(4, 3, 6);
+
+const controls = new OrbitControls(camera, renderer.domElement);
+controls.enableDamping = true;
+controls.dampingFactor = 0.06;
+controls.target.set(0, 0, 0);
+controls.update();
+
+// ─── LICHTER ──────────────────────────────────────────────────
+scene.add(new THREE.AmbientLight(0x222244, 0.8));
+const dLight = new THREE.DirectionalLight(0xffeedd, 2.0);
+dLight.position.set(4, 8, 6);
+scene.add(dLight);
+scene.add(new THREE.DirectionalLight(0x4488ff, 0.4).position.set(-3, 2, -2));
+
+// ─── BODEN ────────────────────────────────────────────────────
+const grid = new THREE.GridHelper(4, 8, 0x44aa77, 0x226644);
+grid.position.y = -0.8;
+scene.add(grid);
+
+// ─── BLASEN (4 Komponenten) ──────────────────────────────────
+const bubbleMeshes = [];
+const componentKeys = ['cpu', 'gpu', 'ram', 'ssd'];
+const colors = [0x88ddff, 0xff66aa, 0xf0d080, 0x8cf0d0];
+const labels = ['CPU', 'GPU', 'RAM', 'SSD'];
+
+function createBubble(radius, color, label) {
+    const geo = new THREE.SphereGeometry(radius, 24, 24);
+    const mat = new THREE.MeshStandardMaterial({
+        color: color,
+        emissive: color,
+        emissiveIntensity: 0.1,
+        transparent: true,
+        opacity: 0.7,
+        roughness: 0.2,
+        metalness: 0.4,
+    });
+    const mesh = new THREE.Mesh(geo, mat);
+    mesh.castShadow = true;
+    scene.add(mesh);
+    return mesh;
+}
+
+// Positionen im Kreis
+const positions = [
+    [-1.2, 0.2, 0],
+    [1.2, 0.2, 0],
+    [0, 0.2, -1.2],
+    [0, 0.2, 1.2]
+];
+
+const bubbles = [];
+labels.forEach((label, i) => {
+    const mesh = createBubble(0.35 + 0.05, colors[i], label);
+    mesh.position.set(positions[i][0], positions[i][1], positions[i][2]);
+    bubbles.push({ mesh, label, baseColor: colors[i], targetScale: 1 });
+});
+
+// ─── VERBINDUNGSLINIEN (Netzwerk) ────────────────────────────
+const lineMat = new THREE.LineBasicMaterial({ color: 0x44aa77, transparent: true, opacity: 0.1 });
+const linePoints = [];
+for (let i = 0; i < bubbles.length; i++) {
+    for (let j = i+1; j < bubbles.length; j++) {
+        const p1 = bubbles[i].mesh.position;
+        const p2 = bubbles[j].mesh.position;
+        const geo = new THREE.BufferGeometry().setFromPoints([p1, p2]);
+        const line = new THREE.Line(geo, lineMat);
+        scene.add(line);
+    }
+}
+
+// ─── SIMULATIONSLOGIK ──────────────────────────────────────────
+function getSelectedValue(selectId, customId) {
+    const sel = document.getElementById(selectId);
+    const val = sel.value;
+    if (val === 'custom') {
+        const inp = document.getElementById(customId);
+        return inp.value.trim() || 'custom';
+    }
+    return val;
+}
+
+function parseCustom(str, type) {
+    // Versuche, aus einem Freitext eine bekannte ID zu finden
+    const lower = str.toLowerCase();
+    if (type === 'cpu') {
+        if (lower.includes('i9') || lower.includes('13900')) return 'intel_i9_13900K';
+        if (lower.includes('i7') || lower.includes('13700')) return 'intel_i7_13700K';
+        if (lower.includes('7950')) return 'amd_ryzen9_7950X';
+        if (lower.includes('7800')) return 'amd_ryzen7_7800X3D';
+        if (lower.includes('13600')) return 'intel_i5_13600K';
+        if (lower.includes('14900')) return 'intel_i9_13900K'; // Fallback
+    }
+    if (type === 'gpu') {
+        if (lower.includes('4090')) return 'nvidia_rtx4090';
+        if (lower.includes('4080')) return 'nvidia_rtx4080';
+        if (lower.includes('7900')) return 'amd_rx7900XTX';
+        if (lower.includes('4070')) return 'nvidia_rtx4070';
+        if (lower.includes('7800')) return 'amd_rx7800XT';
+    }
+    if (type === 'ram') {
+        if (lower.includes('6400')) return 'ddr5_6400_32';
+        if (lower.includes('6000')) return 'ddr5_6000_32';
+        if (lower.includes('5600')) return 'ddr5_5600_16';
+        if (lower.includes('3600')) return 'ddr4_3600_32';
+    }
+    if (type === 'ssd') {
+        if (lower.includes('7000')) return 'pcie4_7000';
+        if (lower.includes('5000')) return 'pcie4_5000';
+        if (lower.includes('3500')) return 'pcie3_3500';
+        if (lower.includes('550')) return 'sata_550';
+    }
+    return null; // unbekannt
+}
+
+function getHardwareData(type, id) {
+    const db = HARDWARE_DB[type];
+    if (db && db[id]) return db[id];
+    // Fallback: generisches Profil
+    return { score: 10000 + Math.random() * 20000, issues: ['unbekannt'] };
+}
+
+function simulate() {
+    // 1. Werte sammeln
+    const cpuId = getSelectedValue('cpuSelect', 'cpuCustom');
+    const gpuId = getSelectedValue('gpuSelect', 'gpuCustom');
+    const ramId = getSelectedValue('ramSelect', 'ramCustom');
+    const ssdId = getSelectedValue('ssdSelect', 'ssdCustom');
+
+    // Custom‑Auflösung
+    const cpuRealId = cpuId === 'custom' ? parseCustom(document.getElementById('cpuCustom').value, 'cpu') : cpuId;
+    const gpuRealId = gpuId === 'custom' ? parseCustom(document.getElementById('gpuCustom').value, 'gpu') : gpuId;
+    const ramRealId = ramId === 'custom' ? parseCustom(document.getElementById('ramCustom').value, 'ram') : ramId;
+    const ssdRealId = ssdId === 'custom' ? parseCustom(document.getElementById('ssdCustom').value, 'ssd') : ssdId;
+
+    const cpuData = getHardwareData('cpu', cpuRealId) || { score: 25000, issues: [] };
+    const gpuData = getHardwareData('gpu', gpuRealId) || { score: 50000, issues: [] };
+    const ramData = getHardwareData('ram', ramRealId) || { speed: 6000, size: 32 };
+    const ssdData = getHardwareData('ssd', ssdRealId) || { speed_read: 5000 };
+
+    // 2. Kompatibilität berechnen
+    let compatibility = 100;
+    let bottlenecks = [];
+    let issues = [];
+
+    // CPU‑GPU‑Balance
+    const cpuScore = cpuData.score || 25000;
+    const gpuScore = gpuData.score || 50000;
+    const ratio = gpuScore / cpuScore;
+    if (ratio > 1.8) {
+        compatibility -= 15;
+        bottlenecks.push('GPU zu stark für CPU (CPU‑Limit)');
+    } else if (ratio < 0.5) {
+        compatibility -= 10;
+        bottlenecks.push('CPU zu stark für GPU (GPU‑Limit)');
+    }
+
+    // RAM‑Geschwindigkeit zu CPU
+    const ramSpeed = ramData.speed || 6000;
+    if (ramSpeed < 4800 && cpuScore > 35000) {
+        compatibility -= 10;
+        bottlenecks.push('RAM zu langsam für High‑End‑CPU');
+        issues.push('DDR5-4800+ empfohlen');
+    }
+    if (ramData.size < 16) {
+        compatibility -= 8;
+        bottlenecks.push('Wenig RAM (<16GB)');
+    }
+
+    // SSD zu restlichem System
+    const ssdSpeed = ssdData.speed_read || 3500;
+    if (ssdSpeed < 1000 && gpuScore > 40000) {
+        compatibility -= 8;
+        bottlenecks.push('SSD zu langsam (SATA) für Gaming‑GPU');
+    }
+
+    // Bekannte Probleme aus Datenbank
+    if (cpuData.issues && cpuData.issues.length) {
+        issues.push(...cpuData.issues);
+        compatibility -= 5 * cpuData.issues.length;
+    }
+    if (gpuData.issues && gpuData.issues.length) {
+        issues.push(...gpuData.issues);
+        compatibility -= 5 * gpuData.issues.length;
+    }
+
+    // Begrenzung
+    compatibility = Math.max(0, Math.min(100, compatibility));
+
+    // Respo (Effizienz) – simuliert Antwortzeit / Energieeffizienz
+    const respo = 0.5 + 0.5 * (compatibility / 100) - 0.02 * (cpuData.tdp || 200) / 100;
+    const respoVal = Math.max(0, Math.min(1, respo));
+
+    // 3. Ergebnis anzeigen
+    const gold = (v) => `<span class="val gold">${v}</span>`;
+    const green = (v) => `<span class="val green">${v}</span>`;
+    const red = (v) => `<span class="val red">${v}</span>`;
+
+    let bottleneckStr = bottlenecks.length ? bottlenecks.join('; ') : 'Kein Engpass erkannt';
+    let issueStr = issues.length ? '⚠️ ' + issues.join('; ') : '✅ Keine bekannten Probleme';
+
+    let empfehlung = '';
+    if (compatibility >= 80) empfehlung = '✅ Ausgezeichnete Kombination';
+    else if (compatibility >= 60) empfehlung = '👍 Solides System, kleine Optimierungen möglich';
+    else if (compatibility >= 40) empfehlung = '⚠️ Nicht optimal – bitte Komponenten anpassen';
+    else empfehlung = '❌ Stark inkompatibel – Neuplanung empfohlen';
+
+    resultContent.innerHTML = `
+        <div class="row"><span>Kompatibilität</span>${gold(compatibility.toFixed(0) + '%')}</div>
+        <div class="row"><span>Bottleneck</span><span class="val">${bottleneckStr}</span></div>
+        <div class="row"><span>Respo (Effizienz)</span>${green((respoVal*100).toFixed(0) + '%')}</div>
+        <div class="row"><span>Probleme</span><span class="val">${issueStr}</span></div>
+        <div class="row"><span>Empfehlung</span><span class="val">${empfehlung}</span></div>
+    `;
+
+    // 4. Blasen‑Visualisierung aktualisieren
+    const values = [
+        cpuScore / 50000, // CPU‑Auslastung
+        gpuScore / 90000, // GPU
+        ramSpeed / 8000,  // RAM
+        ssdSpeed / 8000   // SSD
+    ];
+    bubbles.forEach((b, i) => {
+        const v = Math.min(1, Math.max(0.2, values[i] || 0.5));
+        const scale = 0.5 + v * 0.8;
+        b.mesh.scale.set(scale, scale, scale);
+        const intensity = 0.1 + v * 0.5;
+        b.mesh.material.emissiveIntensity = intensity;
+        // Farbe anpassen: grün bei gut, rot bei schlecht
+        const color = new THREE.Color(b.baseColor);
+        if (v < 0.4) color.lerp(new THREE.Color(0xff4444), 0.5);
+        else if (v > 0.7) color.lerp(new THREE.Color(0x44ff88), 0.3);
+        b.mesh.material.color.copy(color);
+        b.mesh.material.emissive.copy(color);
+    });
+
+    statusText.textContent = `Simulation abgeschlossen – Kompatibilität: ${compatibility.toFixed(0)}%`;
+}
+
+// ─── EVENT BINDING ──────────────────────────────────────────────
+// Custom‑Felder ein-/ausblenden
+['cpuSelect','gpuSelect','ramSelect','ssdSelect'].forEach(id => {
+    const sel = document.getElementById(id);
+    const customId = id.replace('Select','Custom');
+    const inp = document.getElementById(customId);
+    sel.addEventListener('change', () => {
+        inp.style.display = sel.value === 'custom' ? 'block' : 'none';
+    });
+});
+
+document.getElementById('simulateBtn').addEventListener('click', simulate);
+
+// ─── RESIZE ──────────────────────────────────────────────────
+function resize() {
+    const w = canvas.parentElement.clientWidth;
+    const h = canvas.parentElement.clientHeight;
+    renderer.setSize(w, h, false);
+    camera.aspect = w / h;
+    camera.updateProjectionMatrix();
+}
+window.addEventListener('resize', resize);
+resize();
+
+// ─── ANIMATION LOOP ──────────────────────────────────────────
+function animate() {
+    requestAnimationFrame(animate);
+    controls.update();
+    renderer.render(scene, camera);
+}
+animate();
+
+// ─── INIT ──────────────────────────────────────────────────
+simulate();
+statusText.textContent = 'Hardware‑Simulation gestartet – wähle Komponenten und klicke "SIMULIEREN"';
+console.log('🖥️ MAINBOARD · HARDWARE · SIMULATION geladen');
+</script>
+</body>
+</html>
