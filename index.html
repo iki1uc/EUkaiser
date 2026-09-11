@@ -1,565 +1,671 @@
 <!DOCTYPE html>
 <html lang="de">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>🖥️ MAINBOARD · HARDWARE · SIMULATION</title>
-    <style>
-        * { margin:0; padding:0; box-sizing:border-box; }
-        body {
-            background: #05070e;
-            color: #c0d0d0;
-            font-family: 'Segoe UI', 'Consolas', monospace;
-            overflow: hidden;
-            height: 100vh;
-            display: flex;
-            flex-direction: column;
-        }
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>⚜️ EU · KAISER · iki1uc</title>
+<style>
+  *{margin:0;padding:0;box-sizing:border-box;}
+  html,body{
+    height:100%;overflow:hidden;
+    background:#05030a;color:#f0e0c0;
+    font-family:'Yu Mincho','Times New Roman',serif;
+    user-select:none;cursor:default;
+  }
+  canvas{display:block;width:100vw;height:100vh;}
 
-        #app {
-            display: flex;
-            flex:1;
-            height:100vh;
-            overflow:hidden;
-        }
+  /* SIEGEL PANEL */
+  #sealInfo{
+    position:fixed;top:50%;left:50%;
+    transform:translate(-50%,-50%);
+    text-align:center;
+    pointer-events:none;
+    z-index:5;
+    opacity:0;
+    transition:opacity 1.4s;
+  }
+  #sealInfo.show{opacity:1;}
+  #sealInfo .eu{
+    font-size:64px;
+    letter-spacing:12px;
+    color:#f4d060;
+    text-shadow:
+      0 0 30px rgba(212,168,60,0.9),
+      0 0 80px rgba(244,208,96,0.6);
+    font-weight:900;
+    line-height:1;
+  }
+  #sealInfo .kaiser{
+    font-size:22px;
+    letter-spacing:14px;
+    color:#f4e0a0;
+    margin-top:10px;
+    text-transform:uppercase;
+    font-family:'Consolas',monospace;
+  }
 
-        /* Sidebar – Komponentenauswahl */
-        #sidebar {
-            width: 280px;
-            min-width: 240px;
-            background: rgba(6,8,16,0.92);
-            backdrop-filter: blur(12px);
-            border-right: 1px solid rgba(120,220,150,0.08);
-            padding: 16px 14px;
-            overflow-y: auto;
-            z-index: 10;
-            display: flex;
-            flex-direction: column;
-            gap: 10px;
-        }
-        #sidebar .brand {
-            font-size: 18px;
-            font-weight: 300;
-            letter-spacing: 2px;
-            background: linear-gradient(135deg, #7ee0a0, #d8f0c0, #b388ff);
-            -webkit-background-clip: text;
-            -webkit-text-fill-color: transparent;
-            padding-bottom: 8px;
-            border-bottom: 1px solid rgba(120,220,150,0.06);
-        }
-        .comp-group {
-            background: rgba(0,0,0,0.25);
-            border-radius: 10px;
-            padding: 8px 10px;
-            border: 1px solid rgba(120,220,150,0.04);
-        }
-        .comp-group label {
-            font-size: 10px;
-            color: #8aa8a0;
-            display: block;
-            margin-bottom: 3px;
-            letter-spacing: 1px;
-        }
-        .comp-group select, .comp-group input {
-            width: 100%;
-            background: rgba(20,28,20,0.6);
-            border: 1px solid rgba(120,220,150,0.12);
-            border-radius: 6px;
-            padding: 4px 8px;
-            color: #d0e8e0;
-            font-family: inherit;
-            font-size: 11px;
-        }
-        .comp-group input::placeholder { color: #4a6a5a; }
+  /* FORMEL PANEL (unten links) */
+  #formula{
+    position:fixed;bottom:24px;left:24px;
+    background:rgba(8,5,15,0.82);
+    border-left:3px solid #d4a83c;
+    padding:16px 22px;
+    font-family:'Consolas',monospace;
+    font-size:13px;
+    line-height:2;
+    color:#c0b090;
+    z-index:8;
+    min-width:270px;
+    backdrop-filter:blur(6px);
+  }
+  #formula .head{
+    color:#f4d060;
+    font-size:10px;
+    letter-spacing:4px;
+    text-transform:uppercase;
+    border-bottom:1px solid rgba(212,168,60,0.2);
+    padding-bottom:6px;margin-bottom:8px;
+  }
+  #formula .row{
+    display:flex;justify-content:space-between;
+    opacity:0;
+    transition:opacity .5s;
+  }
+  #formula .row.show{opacity:1;}
+  #formula .k{color:#8a7a5a;}
+  #formula .v{color:#f4e0a0;font-weight:bold;}
+  #formula .v.gold{color:#f4d060;}
+  #formula .v.green{color:#8cf0b0;}
 
-        #simulateBtn {
-            background: rgba(20,28,20,0.6);
-            border: 1px solid #7ee0a0;
-            border-radius: 8px;
-            padding: 8px 0;
-            color: #d0e8e0;
-            font-weight: bold;
-            cursor: pointer;
-            transition: 0.3s;
-            margin-top: 6px;
-        }
-        #simulateBtn:hover { background: rgba(120,220,150,0.1); border-color: #b388ff; }
+  /* KONFIRMATION SIEGEL (oben rechts) */
+  #confirmed{
+    position:fixed;top:24px;right:24px;
+    background:rgba(8,5,15,0.85);
+    border:1px solid rgba(212,168,60,0.35);
+    border-radius:4px;
+    padding:12px 20px;
+    font-family:'Consolas',monospace;
+    z-index:8;
+    text-align:center;
+    opacity:0;
+    transform:translateY(-10px);
+    transition:opacity .6s, transform .6s;
+  }
+  #confirmed.show{opacity:1;transform:translateY(0);}
+  #confirmed .stamp{
+    color:#8cf0b0;
+    font-size:14px;
+    letter-spacing:3px;
+    font-weight:bold;
+    text-shadow:0 0 12px rgba(140,240,176,0.6);
+  }
+  #confirmed .sub{
+    color:#6a5a4a;
+    font-size:9px;
+    letter-spacing:2px;
+    margin-top:4px;
+    text-transform:uppercase;
+  }
 
-        .result-panel {
-            flex:1;
-            background: rgba(0,0,0,0.2);
-            border-radius: 10px;
-            padding: 8px 12px;
-            border: 1px solid rgba(120,220,150,0.04);
-            font-size: 10px;
-            line-height: 1.6;
-            overflow-y: auto;
-            min-height: 100px;
-        }
-        .result-panel .head { color: #f0d080; font-weight: bold; border-bottom: 1px solid rgba(255,215,0,0.06); padding-bottom: 4px; margin-bottom: 4px; }
-        .result-panel .row { display: flex; justify-content: space-between; border-bottom: 1px solid rgba(255,255,255,0.02); padding: 2px 0; }
-        .result-panel .val { font-weight: bold; }
-        .val.gold { color: #f0d080; }
-        .val.green { color: #8cf0d0; }
-        .val.red { color: #ff6666; }
+  /* HEADER */
+  #header{
+    position:fixed;top:20px;left:24px;
+    font-family:'Consolas',monospace;
+    font-size:10px;
+    letter-spacing:4px;
+    color:#8a7a5a;
+    z-index:8;
+    text-transform:uppercase;
+  }
+  #header .gold{color:#f4d060;}
 
-        /* 3D-Stage */
-        #stage {
-            flex:1;
-            position:relative;
-            overflow:hidden;
-            background: #05070e;
-        }
-        #stage canvas {
-            display:block;
-            width:100%;
-            height:100%;
-        }
+  /* MODUL COUNT (unten rechts) */
+  #modCount{
+    position:fixed;bottom:24px;right:24px;
+    background:rgba(8,5,15,0.82);
+    border:1px solid rgba(212,168,60,0.25);
+    padding:12px 18px;
+    font-family:'Consolas',monospace;
+    font-size:11px;
+    color:#8a7a5a;
+    z-index:8;
+    min-width:170px;
+    line-height:1.9;
+  }
+  #modCount .num{
+    color:#f4d060;font-weight:bold;
+  }
+  #modCount .head{
+    color:#f4d060;
+    font-size:10px;
+    letter-spacing:3px;
+    text-transform:uppercase;
+    border-bottom:1px solid rgba(212,168,60,0.15);
+    padding-bottom:5px;margin-bottom:6px;
+    display:flex;justify-content:space-between;
+  }
 
-        /* Statuszeile */
-        #status {
-            position: absolute;
-            bottom: 16px;
-            left: 16px;
-            background: rgba(0,0,0,0.55);
-            backdrop-filter: blur(8px);
-            border-radius: 12px;
-            padding: 6px 14px;
-            font-size: 10px;
-            border: 1px solid rgba(120,220,150,0.05);
-            color: #6a8a7a;
-            pointer-events: none;
-            z-index: 20;
-        }
-        #status .val { color: #a0e0b0; font-weight: bold; }
-
-        @media (max-width:800px) {
-            #sidebar { width: 0; min-width:0; padding:0; overflow:hidden; border:none; }
-            #status { left:8px; bottom:8px; font-size:8px; padding:4px 10px; }
-        }
-    </style>
+  @media(max-width:720px){
+    #sealInfo .eu{font-size:40px;letter-spacing:6px;}
+    #sealInfo .kaiser{font-size:14px;letter-spacing:6px;}
+    #formula{font-size:11px;padding:10px 14px;min-width:0;bottom:14px;left:14px;line-height:1.7;}
+    #confirmed{top:14px;right:14px;padding:8px 14px;}
+    #confirmed .stamp{font-size:11px;}
+    #modCount{bottom:14px;right:14px;padding:8px 12px;font-size:10px;min-width:0;}
+    #header{top:14px;left:14px;font-size:9px;}
+  }
+</style>
 </head>
 <body>
 
-<div id="app">
-    <!-- Sidebar – Hardware-Auswahl & Ergebnisse -->
-    <div id="sidebar">
-        <div class="brand">🖥️ MAINBOARD</div>
+<canvas id="seal"></canvas>
 
-        <div class="comp-group">
-            <label>CPU</label>
-            <select id="cpuSelect">
-                <option value="intel_i9_13900K">Intel Core i9-13900K</option>
-                <option value="intel_i7_13700K">Intel Core i7-13700K</option>
-                <option value="amd_ryzen9_7950X">AMD Ryzen 9 7950X</option>
-                <option value="amd_ryzen7_7800X3D">AMD Ryzen 7 7800X3D</option>
-                <option value="intel_i5_13600K">Intel Core i5-13600K</option>
-                <option value="custom">🔧 Eigene Eingabe</option>
-            </select>
-            <input id="cpuCustom" placeholder="z.B. Intel i9-14900K" style="margin-top:4px; display:none;">
-        </div>
-
-        <div class="comp-group">
-            <label>GPU</label>
-            <select id="gpuSelect">
-                <option value="nvidia_rtx4090">NVIDIA RTX 4090</option>
-                <option value="nvidia_rtx4080">NVIDIA RTX 4080</option>
-                <option value="amd_rx7900XTX">AMD RX 7900 XTX</option>
-                <option value="nvidia_rtx4070">NVIDIA RTX 4070</option>
-                <option value="amd_rx7800XT">AMD RX 7800 XT</option>
-                <option value="custom">🔧 Eigene Eingabe</option>
-            </select>
-            <input id="gpuCustom" placeholder="z.B. NVIDIA RTX 5090" style="margin-top:4px; display:none;">
-        </div>
-
-        <div class="comp-group">
-            <label>RAM</label>
-            <select id="ramSelect">
-                <option value="ddr5_6400_32">DDR5-6400 32GB</option>
-                <option value="ddr5_6000_32">DDR5-6000 32GB</option>
-                <option value="ddr5_5600_16">DDR5-5600 16GB</option>
-                <option value="ddr4_3600_32">DDR4-3600 32GB</option>
-                <option value="custom">🔧 Eigene Eingabe</option>
-            </select>
-            <input id="ramCustom" placeholder="z.B. DDR5-7200 48GB" style="margin-top:4px; display:none;">
-        </div>
-
-        <div class="comp-group">
-            <label>SSD</label>
-            <select id="ssdSelect">
-                <option value="pcie4_7000">PCIe 4.0 7000 MB/s</option>
-                <option value="pcie4_5000">PCIe 4.0 5000 MB/s</option>
-                <option value="pcie3_3500">PCIe 3.0 3500 MB/s</option>
-                <option value="sata_550">SATA SSD 550 MB/s</option>
-                <option value="custom">🔧 Eigene Eingabe</option>
-            </select>
-            <input id="ssdCustom" placeholder="z.B. PCIe 5.0 10000" style="margin-top:4px; display:none;">
-        </div>
-
-        <button id="simulateBtn">🔍 SIMULIEREN</button>
-
-        <div class="result-panel" id="resultPanel">
-            <div class="head">📊 ERGEBNISSE</div>
-            <div id="resultContent">
-                <div class="row"><span>Kompatibilität</span><span class="val gold">–</span></div>
-                <div class="row"><span>Bottleneck</span><span class="val">–</span></div>
-                <div class="row"><span>Respo (Effizienz)</span><span class="val green">–</span></div>
-                <div class="row"><span>Empfehlung</span><span class="val">–</span></div>
-            </div>
-        </div>
-    </div>
-
-    <!-- 3D Stage -->
-    <div id="stage">
-        <canvas id="canvas"></canvas>
-        <div id="status">
-            <span>🔄 <span class="val" id="statusText">Simulation bereit</span></span>
-        </div>
-    </div>
+<div id="header">
+  <span class="gold">⚜</span> iki1uc · CONFIRMATION · R00T
 </div>
 
-<script type="importmap">
-{
-    "imports": {
-        "three": "https://cdn.jsdelivr.net/npm/three@0.160.0/build/three.module.js",
-        "three/addons/": "https://cdn.jsdelivr.net/npm/three@0.160.0/examples/jsm/"
-    }
-}
-</script>
+<div id="sealInfo">
+  <div class="eu">EU</div>
+  <div class="kaiser">Kaiser</div>
+</div>
 
-<script type="module">
-// ================================================================
-//  MAINBOARD · HARDWARE · SIMULATION
-//  Echtzeit‑Kompatibilitäts‑Engine mit Blasen‑Visualisierung
-// ================================================================
+<div id="formula">
+  <div class="head">· Formel ·</div>
+  <div class="row" data-i="0"><span class="k">UNI</span><span class="v gold">1</span></div>
+  <div class="row" data-i="1"><span class="k">ROOM</span><span class="v gold">3</span></div>
+  <div class="row" data-i="2"><span class="k">NC</span><span class="v gold">9</span></div>
+  <div class="row" data-i="3"><span class="k">ATOM</span><span class="v gold">243</span></div>
+  <div class="row" data-i="4"><span class="k">FLOW</span><span class="v gold">∞</span></div>
+  <div class="row" data-i="5"><span class="k">ZAM</span><span class="v gold">門</span></div>
+</div>
 
-import * as THREE from 'three';
-import { OrbitControls } from 'three/addons/controls/OrbitControls.js';
+<div id="modCount">
+  <div class="head"><span>· SYSTEM ·</span><span id="sysState">…</span></div>
+  <div>NC-Module <span class="num" id="modNum">0</span>/12</div>
+  <div>Rooms <span class="num" id="roomNum">0</span>/5</div>
+  <div>Achsen <span class="num" id="axisNum">0</span>/243</div>
+  <div>Status <span class="num" id="statusNum">—</span></div>
+</div>
 
-// ─── DATENBANK (reale Werte & bekannte Probleme) ──────────────
-const HARDWARE_DB = {
-    // CPU
-    cpu: {
-        'intel_i9_13900K': { brand:'Intel', model:'Core i9-13900K', score: 42000, tdp: 253, issues: ['Spannungsinstabilität bei 13. Gen'] },
-        'intel_i7_13700K': { brand:'Intel', model:'Core i7-13700K', score: 35000, tdp: 253, issues: ['Spannungsinstabilität bei 13. Gen'] },
-        'amd_ryzen9_7950X': { brand:'AMD', model:'Ryzen 9 7950X', score: 40000, tdp: 170, issues: ['lange Bootzeiten AM5'] },
-        'amd_ryzen7_7800X3D': { brand:'AMD', model:'Ryzen 7 7800X3D', score: 32000, tdp: 120, issues: [] },
-        'intel_i5_13600K': { brand:'Intel', model:'Core i5-13600K', score: 28000, tdp: 181, issues: ['Spannungsinstabilität bei 13. Gen'] },
-    },
-    // GPU
-    gpu: {
-        'nvidia_rtx4090': { brand:'NVIDIA', model:'RTX 4090', score: 85000, vram:24, issues: ['Stromspitzen (ATX 3.0 nötig)'] },
-        'nvidia_rtx4080': { brand:'NVIDIA', model:'RTX 4080', score: 65000, vram:16, issues: ['hoher Preis'] },
-        'amd_rx7900XTX': { brand:'AMD', model:'RX 7900 XTX', score: 62000, vram:24, issues: ['Treiberschwankungen'] },
-        'nvidia_rtx4070': { brand:'NVIDIA', model:'RTX 4070', score: 45000, vram:12, issues: ['niedriger Speicher'] },
-        'amd_rx7800XT': { brand:'AMD', model:'RX 7800 XT', score: 48000, vram:16, issues: ['Treiberschwankungen'] },
-    },
-    // RAM
-    ram: {
-        'ddr5_6400_32': { type:'DDR5', speed:6400, size:32, latency:32 },
-        'ddr5_6000_32': { type:'DDR5', speed:6000, size:32, latency:30 },
-        'ddr5_5600_16': { type:'DDR5', speed:5600, size:16, latency:28 },
-        'ddr4_3600_32': { type:'DDR4', speed:3600, size:32, latency:18 },
-    },
-    // SSD
-    ssd: {
-        'pcie4_7000': { interface:'PCIe 4.0', speed_read:7000, speed_write:6500, iops:1000000 },
-        'pcie4_5000': { interface:'PCIe 4.0', speed_read:5000, speed_write:4500, iops:800000 },
-        'pcie3_3500': { interface:'PCIe 3.0', speed_read:3500, speed_write:3200, iops:600000 },
-        'sata_550': { interface:'SATA', speed_read:550, speed_write:520, iops:90000 },
-    }
-};
+<div id="confirmed">
+  <div class="stamp">✓ SYSTEM BESTÄTIGT</div>
+  <div class="sub">NC · Commands OK</div>
+</div>
 
-// ─── DOM REFS ──────────────────────────────────────────────────
-const canvas = document.getElementById('canvas');
-const statusText = document.getElementById('statusText');
-const resultContent = document.getElementById('resultContent');
+<script>
+"use strict";
+// ═══════════════════════════════════════════════════════════════════
+// ⚜️ EU · KAISER · FORMEL · CONFIRMATION
+// Die Bestätigung: NC-Kommandos laufen — als Code, als Siegel, als Formel.
+// ═══════════════════════════════════════════════════════════════════
 
-// ─── THREE.JS SETUP ──────────────────────────────────────────
-const renderer = new THREE.WebGLRenderer({ canvas, antialias: true });
-renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
-renderer.toneMapping = THREE.ACESFilmicToneMapping;
-renderer.toneMappingExposure = 1.2;
-
-const scene = new THREE.Scene();
-scene.background = new THREE.Color(0x05070e);
-
-const camera = new THREE.PerspectiveCamera(45, canvas.clientWidth / canvas.clientHeight, 0.1, 30);
-camera.position.set(4, 3, 6);
-
-const controls = new OrbitControls(camera, renderer.domElement);
-controls.enableDamping = true;
-controls.dampingFactor = 0.06;
-controls.target.set(0, 0, 0);
-controls.update();
-
-// ─── LICHTER ──────────────────────────────────────────────────
-scene.add(new THREE.AmbientLight(0x222244, 0.8));
-const dLight = new THREE.DirectionalLight(0xffeedd, 2.0);
-dLight.position.set(4, 8, 6);
-scene.add(dLight);
-scene.add(new THREE.DirectionalLight(0x4488ff, 0.4).position.set(-3, 2, -2));
-
-// ─── BODEN ────────────────────────────────────────────────────
-const grid = new THREE.GridHelper(4, 8, 0x44aa77, 0x226644);
-grid.position.y = -0.8;
-scene.add(grid);
-
-// ─── BLASEN (4 Komponenten) ──────────────────────────────────
-const bubbleMeshes = [];
-const componentKeys = ['cpu', 'gpu', 'ram', 'ssd'];
-const colors = [0x88ddff, 0xff66aa, 0xf0d080, 0x8cf0d0];
-const labels = ['CPU', 'GPU', 'RAM', 'SSD'];
-
-function createBubble(radius, color, label) {
-    const geo = new THREE.SphereGeometry(radius, 24, 24);
-    const mat = new THREE.MeshStandardMaterial({
-        color: color,
-        emissive: color,
-        emissiveIntensity: 0.1,
-        transparent: true,
-        opacity: 0.7,
-        roughness: 0.2,
-        metalness: 0.4,
-    });
-    const mesh = new THREE.Mesh(geo, mat);
-    mesh.castShadow = true;
-    scene.add(mesh);
-    return mesh;
-}
-
-// Positionen im Kreis
-const positions = [
-    [-1.2, 0.2, 0],
-    [1.2, 0.2, 0],
-    [0, 0.2, -1.2],
-    [0, 0.2, 1.2]
+// ─── KONSTANTEN ───────────────────────────────────────────────────
+const MODULES = [
+  'NC_figur', 'NC_kraft', 'NC_space', 'NC_time',
+  'OS_CORE', 'axiom.map', 'coord', 'dreieck',
+  'respo', 'router', 'vec', 'resolver'
+];
+const ROOMS = ['X.CORE', 'X.IN', 'X.OUT', 'Y', 'B'];
+const NUMBERS = [3, 9, 27, 81, 243];       // 3^1 … 3^5
+const NUM_ANGLES = [
+  {r:1.0, speed: 0.006},
+  {r:1.3, speed:-0.004},
+  {r:1.6, speed: 0.003},
+  {r:1.9, speed:-0.002},
+  {r:2.2, speed: 0.0015},
 ];
 
-const bubbles = [];
-labels.forEach((label, i) => {
-    const mesh = createBubble(0.35 + 0.05, colors[i], label);
-    mesh.position.set(positions[i][0], positions[i][1], positions[i][2]);
-    bubbles.push({ mesh, label, baseColor: colors[i], targetScale: 1 });
-});
+// ─── STATE ────────────────────────────────────────────────────────
+const S = {
+  tick: 0,
+  modulesPinged: 0,
+  roomsPinged: 0,
+  axisTick: 0,
+  startedAt: Date.now(),
+  sealOpened: false,
+  confirmed: false,
+  // Roome nodes positions
+  roomNodes: [],
+  // Module nodes positions
+  modNodes: [],
+  // Kira sparkles
+  sparks: [],
+  // Screen flash
+  flash: 0,
+  // Imperial aura pulse
+  auraPulse: 0,
+};
 
-// ─── VERBINDUNGSLINIEN (Netzwerk) ────────────────────────────
-const lineMat = new THREE.LineBasicMaterial({ color: 0x44aa77, transparent: true, opacity: 0.1 });
-const linePoints = [];
-for (let i = 0; i < bubbles.length; i++) {
-    for (let j = i+1; j < bubbles.length; j++) {
-        const p1 = bubbles[i].mesh.position;
-        const p2 = bubbles[j].mesh.position;
-        const geo = new THREE.BufferGeometry().setFromPoints([p1, p2]);
-        const line = new THREE.Line(geo, lineMat);
-        scene.add(line);
-    }
-}
+// ─── CANVAS ───────────────────────────────────────────────────────
+const cv = document.getElementById('seal');
+const ctx = cv.getContext('2d');
+let W, H, CX, CY, R, DPR;
 
-// ─── SIMULATIONSLOGIK ──────────────────────────────────────────
-function getSelectedValue(selectId, customId) {
-    const sel = document.getElementById(selectId);
-    const val = sel.value;
-    if (val === 'custom') {
-        const inp = document.getElementById(customId);
-        return inp.value.trim() || 'custom';
-    }
-    return val;
-}
-
-function parseCustom(str, type) {
-    // Versuche, aus einem Freitext eine bekannte ID zu finden
-    const lower = str.toLowerCase();
-    if (type === 'cpu') {
-        if (lower.includes('i9') || lower.includes('13900')) return 'intel_i9_13900K';
-        if (lower.includes('i7') || lower.includes('13700')) return 'intel_i7_13700K';
-        if (lower.includes('7950')) return 'amd_ryzen9_7950X';
-        if (lower.includes('7800')) return 'amd_ryzen7_7800X3D';
-        if (lower.includes('13600')) return 'intel_i5_13600K';
-        if (lower.includes('14900')) return 'intel_i9_13900K'; // Fallback
-    }
-    if (type === 'gpu') {
-        if (lower.includes('4090')) return 'nvidia_rtx4090';
-        if (lower.includes('4080')) return 'nvidia_rtx4080';
-        if (lower.includes('7900')) return 'amd_rx7900XTX';
-        if (lower.includes('4070')) return 'nvidia_rtx4070';
-        if (lower.includes('7800')) return 'amd_rx7800XT';
-    }
-    if (type === 'ram') {
-        if (lower.includes('6400')) return 'ddr5_6400_32';
-        if (lower.includes('6000')) return 'ddr5_6000_32';
-        if (lower.includes('5600')) return 'ddr5_5600_16';
-        if (lower.includes('3600')) return 'ddr4_3600_32';
-    }
-    if (type === 'ssd') {
-        if (lower.includes('7000')) return 'pcie4_7000';
-        if (lower.includes('5000')) return 'pcie4_5000';
-        if (lower.includes('3500')) return 'pcie3_3500';
-        if (lower.includes('550')) return 'sata_550';
-    }
-    return null; // unbekannt
-}
-
-function getHardwareData(type, id) {
-    const db = HARDWARE_DB[type];
-    if (db && db[id]) return db[id];
-    // Fallback: generisches Profil
-    return { score: 10000 + Math.random() * 20000, issues: ['unbekannt'] };
-}
-
-function simulate() {
-    // 1. Werte sammeln
-    const cpuId = getSelectedValue('cpuSelect', 'cpuCustom');
-    const gpuId = getSelectedValue('gpuSelect', 'gpuCustom');
-    const ramId = getSelectedValue('ramSelect', 'ramCustom');
-    const ssdId = getSelectedValue('ssdSelect', 'ssdCustom');
-
-    // Custom‑Auflösung
-    const cpuRealId = cpuId === 'custom' ? parseCustom(document.getElementById('cpuCustom').value, 'cpu') : cpuId;
-    const gpuRealId = gpuId === 'custom' ? parseCustom(document.getElementById('gpuCustom').value, 'gpu') : gpuId;
-    const ramRealId = ramId === 'custom' ? parseCustom(document.getElementById('ramCustom').value, 'ram') : ramId;
-    const ssdRealId = ssdId === 'custom' ? parseCustom(document.getElementById('ssdCustom').value, 'ssd') : ssdId;
-
-    const cpuData = getHardwareData('cpu', cpuRealId) || { score: 25000, issues: [] };
-    const gpuData = getHardwareData('gpu', gpuRealId) || { score: 50000, issues: [] };
-    const ramData = getHardwareData('ram', ramRealId) || { speed: 6000, size: 32 };
-    const ssdData = getHardwareData('ssd', ssdRealId) || { speed_read: 5000 };
-
-    // 2. Kompatibilität berechnen
-    let compatibility = 100;
-    let bottlenecks = [];
-    let issues = [];
-
-    // CPU‑GPU‑Balance
-    const cpuScore = cpuData.score || 25000;
-    const gpuScore = gpuData.score || 50000;
-    const ratio = gpuScore / cpuScore;
-    if (ratio > 1.8) {
-        compatibility -= 15;
-        bottlenecks.push('GPU zu stark für CPU (CPU‑Limit)');
-    } else if (ratio < 0.5) {
-        compatibility -= 10;
-        bottlenecks.push('CPU zu stark für GPU (GPU‑Limit)');
-    }
-
-    // RAM‑Geschwindigkeit zu CPU
-    const ramSpeed = ramData.speed || 6000;
-    if (ramSpeed < 4800 && cpuScore > 35000) {
-        compatibility -= 10;
-        bottlenecks.push('RAM zu langsam für High‑End‑CPU');
-        issues.push('DDR5-4800+ empfohlen');
-    }
-    if (ramData.size < 16) {
-        compatibility -= 8;
-        bottlenecks.push('Wenig RAM (<16GB)');
-    }
-
-    // SSD zu restlichem System
-    const ssdSpeed = ssdData.speed_read || 3500;
-    if (ssdSpeed < 1000 && gpuScore > 40000) {
-        compatibility -= 8;
-        bottlenecks.push('SSD zu langsam (SATA) für Gaming‑GPU');
-    }
-
-    // Bekannte Probleme aus Datenbank
-    if (cpuData.issues && cpuData.issues.length) {
-        issues.push(...cpuData.issues);
-        compatibility -= 5 * cpuData.issues.length;
-    }
-    if (gpuData.issues && gpuData.issues.length) {
-        issues.push(...gpuData.issues);
-        compatibility -= 5 * gpuData.issues.length;
-    }
-
-    // Begrenzung
-    compatibility = Math.max(0, Math.min(100, compatibility));
-
-    // Respo (Effizienz) – simuliert Antwortzeit / Energieeffizienz
-    const respo = 0.5 + 0.5 * (compatibility / 100) - 0.02 * (cpuData.tdp || 200) / 100;
-    const respoVal = Math.max(0, Math.min(1, respo));
-
-    // 3. Ergebnis anzeigen
-    const gold = (v) => `<span class="val gold">${v}</span>`;
-    const green = (v) => `<span class="val green">${v}</span>`;
-    const red = (v) => `<span class="val red">${v}</span>`;
-
-    let bottleneckStr = bottlenecks.length ? bottlenecks.join('; ') : 'Kein Engpass erkannt';
-    let issueStr = issues.length ? '⚠️ ' + issues.join('; ') : '✅ Keine bekannten Probleme';
-
-    let empfehlung = '';
-    if (compatibility >= 80) empfehlung = '✅ Ausgezeichnete Kombination';
-    else if (compatibility >= 60) empfehlung = '👍 Solides System, kleine Optimierungen möglich';
-    else if (compatibility >= 40) empfehlung = '⚠️ Nicht optimal – bitte Komponenten anpassen';
-    else empfehlung = '❌ Stark inkompatibel – Neuplanung empfohlen';
-
-    resultContent.innerHTML = `
-        <div class="row"><span>Kompatibilität</span>${gold(compatibility.toFixed(0) + '%')}</div>
-        <div class="row"><span>Bottleneck</span><span class="val">${bottleneckStr}</span></div>
-        <div class="row"><span>Respo (Effizienz)</span>${green((respoVal*100).toFixed(0) + '%')}</div>
-        <div class="row"><span>Probleme</span><span class="val">${issueStr}</span></div>
-        <div class="row"><span>Empfehlung</span><span class="val">${empfehlung}</span></div>
-    `;
-
-    // 4. Blasen‑Visualisierung aktualisieren
-    const values = [
-        cpuScore / 50000, // CPU‑Auslastung
-        gpuScore / 90000, // GPU
-        ramSpeed / 8000,  // RAM
-        ssdSpeed / 8000   // SSD
-    ];
-    bubbles.forEach((b, i) => {
-        const v = Math.min(1, Math.max(0.2, values[i] || 0.5));
-        const scale = 0.5 + v * 0.8;
-        b.mesh.scale.set(scale, scale, scale);
-        const intensity = 0.1 + v * 0.5;
-        b.mesh.material.emissiveIntensity = intensity;
-        // Farbe anpassen: grün bei gut, rot bei schlecht
-        const color = new THREE.Color(b.baseColor);
-        if (v < 0.4) color.lerp(new THREE.Color(0xff4444), 0.5);
-        else if (v > 0.7) color.lerp(new THREE.Color(0x44ff88), 0.3);
-        b.mesh.material.color.copy(color);
-        b.mesh.material.emissive.copy(color);
-    });
-
-    statusText.textContent = `Simulation abgeschlossen – Kompatibilität: ${compatibility.toFixed(0)}%`;
-}
-
-// ─── EVENT BINDING ──────────────────────────────────────────────
-// Custom‑Felder ein-/ausblenden
-['cpuSelect','gpuSelect','ramSelect','ssdSelect'].forEach(id => {
-    const sel = document.getElementById(id);
-    const customId = id.replace('Select','Custom');
-    const inp = document.getElementById(customId);
-    sel.addEventListener('change', () => {
-        inp.style.display = sel.value === 'custom' ? 'block' : 'none';
-    });
-});
-
-document.getElementById('simulateBtn').addEventListener('click', simulate);
-
-// ─── RESIZE ──────────────────────────────────────────────────
-function resize() {
-    const w = canvas.parentElement.clientWidth;
-    const h = canvas.parentElement.clientHeight;
-    renderer.setSize(w, h, false);
-    camera.aspect = w / h;
-    camera.updateProjectionMatrix();
+function resize(){
+  DPR = window.devicePixelRatio || 1;
+  W = window.innerWidth; H = window.innerHeight;
+  cv.width = W*DPR; cv.height = H*DPR;
+  cv.style.width = W+'px'; cv.style.height = H+'px';
+  ctx.setTransform(DPR,0,0,DPR,0,0);
+  CX = W/2; CY = H/2;
+  R = Math.min(W,H)*0.26;
+  layoutNodes();
 }
 window.addEventListener('resize', resize);
-resize();
 
-// ─── ANIMATION LOOP ──────────────────────────────────────────
-function animate() {
-    requestAnimationFrame(animate);
-    controls.update();
-    renderer.render(scene, camera);
+function layoutNodes(){
+  // Module rund um das Siegel (äußerer Ring)
+  S.modNodes = MODULES.map((m,i)=>{
+    const a = (i/MODULES.length) * Math.PI * 2 - Math.PI/2;
+    return {
+      name: m,
+      a,
+      r: R * 2.5,
+      x: CX + Math.cos(a)*R*2.5,
+      y: CY + Math.sin(a)*R*2.5,
+      glow: 0,
+    };
+  });
+  // Rooms als 5 Knoten weiter außen
+  S.roomNodes = ROOMS.map((n,i)=>{
+    const a = (i/ROOMS.length) * Math.PI * 2 - Math.PI/2 + 0.3;
+    return {
+      name: n,
+      a,
+      r: R * 3.1,
+      x: CX + Math.cos(a)*R*3.1,
+      y: CY + Math.sin(a)*R*3.1,
+      glow: 0,
+    };
+  });
 }
-animate();
 
-// ─── INIT ──────────────────────────────────────────────────
-simulate();
-statusText.textContent = 'Hardware‑Simulation gestartet – wähle Komponenten und klicke "SIMULIEREN"';
-console.log('🖥️ MAINBOARD · HARDWARE · SIMULATION geladen');
+// ─── ZEICHNEN ─────────────────────────────────────────────────────
+function draw(){
+  // Hintergrund — tiefer Kaiser-Samt
+  const bg = ctx.createRadialGradient(CX,CY,0,CX,CY,Math.max(W,H)*0.85);
+  bg.addColorStop(0, '#1a0e1c');
+  bg.addColorStop(0.45, '#0d0612');
+  bg.addColorStop(1, '#05030a');
+  ctx.fillStyle = bg;
+  ctx.fillRect(0,0,W,H);
+
+  // Aura (kaiserlich — gold, pulsierend)
+  const auraR = R * 2.2 + Math.sin(S.auraPulse*0.04) * 8;
+  const aura = ctx.createRadialGradient(CX,CY,0,CX,CY,auraR);
+  aura.addColorStop(0, 'rgba(244,208,96,0.10)');
+  aura.addColorStop(0.5, 'rgba(212,168,60,0.04)');
+  aura.addColorStop(1, 'rgba(212,168,60,0)');
+  ctx.fillStyle = aura;
+  ctx.beginPath(); ctx.arc(CX,CY,auraR,0,Math.PI*2); ctx.fill();
+
+  // Kaiserliche Radiallinien (Sonnenstrahlen)
+  drawRadiatingLines();
+
+  // Zahlen-Ringe (3, 9, 27, 81, 243)
+  drawNumberRings();
+
+  // Zentrales Siegel
+  drawCentralSeal();
+
+  // Module nodes
+  drawModNodes();
+
+  // Room nodes
+  drawRoomNodes();
+
+  // Sparks
+  drawSparks();
+
+  // Flash
+  if(S.flash > 0.01){
+    ctx.fillStyle = `rgba(244,208,96,${S.flash * 0.35})`;
+    ctx.fillRect(0,0,W,H);
+    S.flash *= 0.9;
+    if(S.flash < 0.02) S.flash = 0;
+  }
+}
+
+function drawRadiatingLines(){
+  const lines = 72;
+  const innerR = R * 0.75;
+  const outerR = R * 2.4;
+  ctx.save();
+  ctx.strokeStyle = 'rgba(212,168,60,0.05)';
+  ctx.lineWidth = 0.6;
+  for(let i=0;i<lines;i++){
+    const a = (i/lines)*Math.PI*2 + S.tick*0.0008;
+    ctx.beginPath();
+    ctx.moveTo(CX + Math.cos(a)*innerR, CY + Math.sin(a)*innerR);
+    ctx.lineTo(CX + Math.cos(a)*outerR, CY + Math.sin(a)*outerR);
+    ctx.stroke();
+  }
+  ctx.restore();
+}
+
+function drawNumberRings(){
+  NUMBERS.forEach((num, i)=>{
+    const cfg = NUM_ANGLES[i];
+    const radius = R * cfg.r;
+    const rot = S.tick * cfg.speed;
+
+    // Ring selbst (dünn)
+    ctx.beginPath();
+    ctx.arc(CX, CY, radius, 0, Math.PI*2);
+    ctx.strokeStyle = `rgba(212,168,60,${0.06 + i*0.025})`;
+    ctx.lineWidth = 1;
+    ctx.stroke();
+
+    // Zahl als Text in der Ring-Mitte
+    ctx.save();
+    ctx.fillStyle = `rgba(244,208,96,${0.28 + i*0.08})`;
+    ctx.font = `${11 + i*1.5}px Consolas, monospace`;
+    ctx.textAlign = 'center'; ctx.textBaseline = 'middle';
+    ctx.shadowColor = '#d4a83c';
+    ctx.shadowBlur = 8;
+    // Zahl an einem Winkel, der rotiert
+    const a = rot;
+    const x = CX + Math.cos(a)*radius;
+    const y = CY + Math.sin(a)*radius;
+    ctx.fillText(String(num), x, y);
+    ctx.restore();
+
+    // Ein paar Ticks (Achsen-Marker) auf dem Ring
+    const ticks = i+2;
+    for(let k=0;k<ticks;k++){
+      const ta = (k/ticks)*Math.PI*2 - rot*2;
+      const x1 = CX + Math.cos(ta)*(radius-3);
+      const y1 = CY + Math.sin(ta)*(radius-3);
+      const x2 = CX + Math.cos(ta)*(radius+3);
+      const y2 = CY + Math.sin(ta)*(radius+3);
+      ctx.strokeStyle = `rgba(212,168,60,${0.15 + i*0.03})`;
+      ctx.lineWidth = 0.8;
+      ctx.beginPath();
+      ctx.moveTo(x1,y1); ctx.lineTo(x2,y2);
+      ctx.stroke();
+    }
+  });
+}
+
+function drawCentralSeal(){
+  const pulse = 1 + 0.03*Math.sin(S.tick*0.06);
+  const r = R * 0.55 * pulse;
+
+  // Äußerer Siegel-Ring
+  ctx.beginPath();
+  ctx.arc(CX, CY, r, 0, Math.PI*2);
+  ctx.strokeStyle = 'rgba(244,208,96,0.65)';
+  ctx.lineWidth = 2;
+  ctx.shadowColor = '#f4d060';
+  ctx.shadowBlur = 20;
+  ctx.stroke();
+  ctx.shadowBlur = 0;
+
+  // Zweiter dünner Ring
+  ctx.beginPath();
+  ctx.arc(CX, CY, r*0.88, 0, Math.PI*2);
+  ctx.strokeStyle = 'rgba(244,208,96,0.35)';
+  ctx.lineWidth = 1;
+  ctx.stroke();
+
+  // Kaiserliche Strahlen (8 Speichen)
+  ctx.save();
+  ctx.strokeStyle = 'rgba(244,208,96,0.5)';
+  ctx.lineWidth = 1.5;
+  for(let i=0;i<8;i++){
+    const a = (i/8)*Math.PI*2 + S.tick*0.003;
+    ctx.beginPath();
+    ctx.moveTo(CX + Math.cos(a)*r*0.35, CY + Math.sin(a)*r*0.35);
+    ctx.lineTo(CX + Math.cos(a)*r*0.85, CY + Math.sin(a)*r*0.85);
+    ctx.stroke();
+  }
+  ctx.restore();
+
+  // Sehr innerer Kern-Glow
+  const coreG = ctx.createRadialGradient(CX,CY,0,CX,CY,r*0.5);
+  coreG.addColorStop(0, 'rgba(244,208,96,0.55)');
+  coreG.addColorStop(0.5, 'rgba(212,168,60,0.15)');
+  coreG.addColorStop(1, 'rgba(212,168,60,0)');
+  ctx.fillStyle = coreG;
+  ctx.beginPath(); ctx.arc(CX,CY,r*0.5,0,Math.PI*2); ctx.fill();
+
+  // Inneres Kanji "皇帝" (Kaiser)
+  ctx.save();
+  ctx.fillStyle = 'rgba(244,208,96,0.85)';
+  ctx.font = `bold ${Math.round(r*0.75)}px "Yu Mincho","Hiragino Mincho ProN","MS Mincho",serif`;
+  ctx.textAlign = 'center'; ctx.textBaseline = 'middle';
+  ctx.shadowColor = '#f4d060';
+  ctx.shadowBlur = 30;
+  ctx.fillText('皇', CX, CY);
+  ctx.restore();
+}
+
+function drawModNodes(){
+  for(const n of S.modNodes){
+    // Position (leicht rotierend)
+    n.a += 0.0008;
+    const x = CX + Math.cos(n.a) * n.r;
+    const y = CY + Math.sin(n.a) * n.r;
+    n.x = x; n.y = y;
+
+    // Glow
+    const g = ctx.createRadialGradient(x,y,0,x,y,20);
+    g.addColorStop(0, `rgba(244,208,96,${0.5 + n.glow*0.5})`);
+    g.addColorStop(1, 'rgba(244,208,96,0)');
+    ctx.fillStyle = g;
+    ctx.beginPath(); ctx.arc(x,y,20,0,Math.PI*2); ctx.fill();
+
+    // Punkt
+    ctx.beginPath();
+    ctx.arc(x,y,2.5 + n.glow*1.5,0,Math.PI*2);
+    ctx.fillStyle = n.glow > 0.5 ? '#fff5d0' : '#f4d060';
+    ctx.shadowColor = '#f4d060';
+    ctx.shadowBlur = 10 + n.glow*15;
+    ctx.fill();
+    ctx.shadowBlur = 0;
+
+    // Label
+    ctx.fillStyle = `rgba(200,180,140,${0.4 + n.glow*0.5})`;
+    ctx.font = '9px Consolas, monospace';
+    ctx.textAlign = 'center'; ctx.textBaseline = 'middle';
+    ctx.fillText(n.name, x, y - 10);
+
+    if(n.glow > 0.01) n.glow *= 0.94;
+  }
+}
+
+function drawRoomNodes(){
+  for(const n of S.roomNodes){
+    n.a -= 0.0005;
+    const x = CX + Math.cos(n.a) * n.r;
+    const y = CY + Math.sin(n.a) * n.r;
+    n.x = x; n.y = y;
+
+    // Kleines Quadrat als Marker
+    ctx.save();
+    ctx.translate(x,y);
+    ctx.rotate(n.a);
+    ctx.strokeStyle = `rgba(212,168,60,${0.5 + n.glow*0.5})`;
+    ctx.lineWidth = 1;
+    ctx.strokeRect(-3,-3,6,6);
+    ctx.restore();
+
+    // Label
+    ctx.fillStyle = `rgba(200,180,140,${0.45 + n.glow*0.5})`;
+    ctx.font = '9px Consolas, monospace';
+    ctx.textAlign = 'center'; ctx.textBaseline = 'middle';
+    ctx.fillText(n.name, x, y - 12);
+
+    if(n.glow > 0.01) n.glow *= 0.94;
+  }
+}
+
+function drawSparks(){
+  for(let i=S.sparks.length-1;i>=0;i--){
+    const s = S.sparks[i];
+    s.x += s.vx; s.y += s.vy;
+    s.vx *= 0.95; s.vy *= 0.95;
+    s.life++;
+    const a = 1 - s.life/s.maxLife;
+    ctx.fillStyle = `rgba(244,208,96,${a})`;
+    ctx.beginPath();
+    ctx.arc(s.x, s.y, s.size*a, 0, Math.PI*2);
+    ctx.fill();
+    if(s.life > s.maxLife) S.sparks.splice(i,1);
+  }
+}
+
+// ─── UPDATE / LOOP ────────────────────────────────────────────────
+function loop(){
+  S.tick++;
+  S.auraPulse++;
+
+  // Zufällige module-Pings (als "Achsen werden verifiziert")
+  if(Math.random() < 0.015){
+    const n = S.modNodes[Math.floor(Math.random()*S.modNodes.length)];
+    n.glow = 1;
+    spawnSpark(n.x, n.y);
+  }
+  // Room pings
+  if(Math.random() < 0.008){
+    const n = S.roomNodes[Math.floor(Math.random()*S.roomNodes.length)];
+    n.glow = 1;
+    spawnSpark(n.x, n.y);
+  }
+  // Achsen-Tick (243 pro Zyklus)
+  S.axisTick = (S.axisTick + 1) % 243;
+  document.getElementById('axisNum').textContent = S.axisTick;
+
+  draw();
+  requestAnimationFrame(loop);
+}
+
+function spawnSpark(x,y){
+  const n = 4 + Math.floor(Math.random()*3);
+  for(let i=0;i<n;i++){
+    const a = Math.random()*Math.PI*2;
+    const sp = 0.3 + Math.random()*1.2;
+    S.sparks.push({
+      x, y,
+      vx: Math.cos(a)*sp,
+      vy: Math.sin(a)*sp,
+      size: 1 + Math.random()*1.5,
+      life: 0,
+      maxLife: 30 + Math.random()*20,
+    });
+  }
+}
+
+// ─── SOUND ────────────────────────────────────────────────────────
+let audioCtx = null;
+function beep(freq, dur, type){
+  try{
+    audioCtx = audioCtx || new (window.AudioContext || window.webkitAudioContext)();
+    const o = audioCtx.createOscillator();
+    const g = audioCtx.createGain();
+    o.type = type || 'sine';
+    o.frequency.value = freq;
+    g.gain.value = 0.035;
+    g.gain.exponentialRampToValueAtTime(0.001, audioCtx.currentTime + dur);
+    o.connect(g); g.connect(audioCtx.destination);
+    o.start(); o.stop(audioCtx.currentTime + dur);
+  }catch(_){}
+}
+
+// ─── BESTÄTIGUNGS-SEQUENZ ─────────────────────────────────────────
+// Die Formel-Zeilen erscheinen nacheinander, jede mit einem Ton.
+// Module werden "gepingt", Rooms werden "gepingt".
+// Am Ende: Siegel + Bestätigung.
+
+function runConfirmation(){
+  const rows = document.querySelectorAll('#formula .row');
+  let i = 0;
+  const interval = setInterval(()=>{
+    if(i >= rows.length){
+      clearInterval(interval);
+      finishConfirmation();
+      return;
+    }
+    rows[i].classList.add('show');
+    // Sound pro Zeile — höher werdend (kaiserliche Tonleiter)
+    const freqs = [330, 392, 440, 523, 587, 659];
+    beep(freqs[i] || 660, 0.14, 'sine');
+    // ein Modul "gepingt"
+    if(S.modNodes[i]){
+      S.modNodes[i].glow = 1;
+      spawnSpark(S.modNodes[i].x, S.modNodes[i].y);
+      document.getElementById('modNum').textContent = i + 1;
+    }
+    if(i < ROOMS.length){
+      if(S.roomNodes[i]){
+        S.roomNodes[i].glow = 1;
+        spawnSpark(S.roomNodes[i].x, S.roomNodes[i].y);
+      }
+      document.getElementById('roomNum').textContent = i + 1;
+    }
+    i++;
+  }, 420);
+}
+
+function finishConfirmation(){
+  // Kurz warten, dann alles zeigen
+  setTimeout(()=>{
+    document.getElementById('sysState').textContent = 'OK';
+    document.getElementById('statusNum').textContent = 'BESTÄTIGT';
+    document.getElementById('statusNum').style.color = '#8cf0b0';
+
+    // Alle Module final pingen
+    S.modNodes.forEach((n,i)=>{
+      setTimeout(()=>{
+        n.glow = 1;
+        spawnSpark(n.x, n.y);
+        beep(523 + i*15, 0.06, 'sine');
+      }, i*50);
+    });
+    // Alle Rooms
+    S.roomNodes.forEach((n,i)=>{
+      setTimeout(()=>{
+        n.glow = 1;
+        spawnSpark(n.x, n.y);
+      }, 600 + i*80);
+    });
+
+    // Formel-Töne (kaiserlicher Schlussakkord)
+    setTimeout(()=>{
+      beep(523, 0.4, 'sine');
+      setTimeout(()=>beep(659, 0.4, 'sine'), 180);
+      setTimeout(()=>beep(784, 0.6, 'sine'), 360);
+      S.flash = 1;
+    }, 800);
+
+    // Bestätigung anzeigen
+    setTimeout(()=>{
+      document.getElementById('sealInfo').classList.add('show');
+    }, 1200);
+
+    setTimeout(()=>{
+      document.getElementById('confirmed').classList.add('show');
+      S.confirmed = true;
+    }, 1800);
+  }, 300);
+}
+
+// ─── INIT ─────────────────────────────────────────────────────────
+resize();
+document.getElementById('modNum').textContent = '0';
+document.getElementById('roomNum').textContent = '0';
+document.getElementById('axisNum').textContent = '0';
+document.getElementById('sysState').textContent = 'prüft…';
+
+console.log('%c⚜️ EU · KAISER · iki1uc · CONFIRMATION','color:#f4d060;font-weight:bold;font-size:14px;');
+console.log('Formel: UNI=1 · ROOM=3 · NC=9 · ATOM=243 · FLOW=∞ · ZAM=門');
+console.log('12 NC-Module · 5 Rooms · 243 Achsen');
+console.log('Bestätigung läuft…');
+
+// Bestätigung starten (nach kurzem Delay damit resize/init fertig)
+setTimeout(runConfirmation, 600);
+
+requestAnimationFrame(loop);
 </script>
 </body>
 </html>
